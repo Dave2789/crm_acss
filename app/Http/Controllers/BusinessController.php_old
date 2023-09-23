@@ -1,0 +1,1663 @@
+<?php namespace App\Http\Controllers;
+
+use DB;
+use Input;
+use Session;
+use App\Models\Business;
+use App\Models\Contacts_by_business;
+use Illuminate\Http\Request;
+
+class BusinessController extends Controller {
+
+	public function __construct()
+        {
+            $this->middleware('guest')->except('logout');
+        }
+        
+        public function businessCreateView()
+        {
+            
+            $commercial_business  = DB::table("commercial_business")
+                                    ->where('commercial_business.status','=',1)
+                                    ->get();
+            
+            $categories        = DB::table("categories")
+                                    ->where('categories.status','=',1)
+                                    ->get();
+            
+            $states            = DB::table('entidad')
+                                   ->select('nom_ent'
+                                           ,'cve_ent')
+                                   ->get();
+            
+            $municipality      = DB::table('municipio')
+                                   ->select('nom_mun'
+                                           ,'cve_mun')
+                                   ->get();
+            
+            $origin            = DB::table('business_origin')
+                                   ->get();
+            
+            
+            return view('empresas.crearEmpresa')->with("states",$states)
+                                                ->with("municipality",$municipality)
+                                                ->with("commercial_business",$commercial_business)
+                                                ->with("categories",$categories)
+                                                ->with("origin",$origin);
+        }
+        
+        public function getCity(Request $request){
+            
+            $idState  = $request->input("idState");
+         
+            $municipality    = DB::table('municipio')
+                          ->select('cve_mun'
+                                  ,'nom_mun')
+                          ->where('cve_ent','=',$idState)
+                          ->get();
+            
+               $view = view('empresas.getMunicipality', array(
+                    "municipality" => $municipality,
+                        ))->render();
+        
+            return \Response::json(array(
+                                  "valid"       => "true",
+                                  "view"        => $view
+                                )); 
+        }
+        
+        public function addbusinessDB(Request $request){
+            
+            $firstName          = htmlentities ($request->input("firstName"));
+            $domicilio          = htmlentities ($request->input("domicilio"));
+            $city               = $request->input("city");
+            $state              = $request->input("state");
+            $country            = $request->input("country");
+            $web                = $request->input("web");
+            $giro               = $request->input("giro");
+            $cat                = $request->input("cat");
+            $origen             = htmlentities ($request->input("origen"));
+            $image              = $request->file('image');
+            $user               = Session::get('pkUser');
+            $arrayContacts      = json_decode($request->input('arrayContacts'));
+            $date               = date("Y-m-d");
+            $flag               = "true";
+            $message            = "true";
+            DB::beginTransaction();
+             
+            try { 
+                if($image != ''){ 
+                    if(file_exists ($image)){
+                        $nameFile = $image->getClientOriginalName();
+                        if($nameFile!=''){
+                            $ext            = $image->extension();
+                            
+                            if(($ext == 'png') ||($ext == 'jpg')||($ext == 'jpeg')){
+                                
+                                $insertBusiness                       = new Business;
+                                $insertBusiness->rfc                  = $firstName;
+                                $insertBusiness->name                 = $firstName;
+                                $insertBusiness->mail                 = '';
+                                $insertBusiness->address              = $domicilio;
+                                $insertBusiness->number               = 1;
+                                $insertBusiness->postal_code          = 1;
+                                $insertBusiness->city                 = $city;
+                                $insertBusiness->state                = $state;
+                                $insertBusiness->country              = $country;
+                                $insertBusiness->web                  = $web;
+                                $insertBusiness->phone                = '';
+                                $insertBusiness->mobile_phone         = '';
+                                $insertBusiness->fkComercial_business = $giro;
+                                $insertBusiness->fkCategory           = $cat;
+                                $insertBusiness->fkUser               = $user;
+                                $insertBusiness->fKOrigin             = $origen;
+                                $insertBusiness->image                = '';
+                                $insertBusiness->fkBusiness_type      = 1;
+                                $insertBusiness->fkBusiness_status    = 1;
+                                $insertBusiness->is_active            = 1;
+                                $insertBusiness->date_register        = $date;
+                                $insertBusiness->stateType            = 1;
+                                $insertBusiness->status               = 1;
+                                
+                                if($insertBusiness->save()){
+                                    
+                                    $destinationPath = public_path('/images/business/');
+                                    $image->move($destinationPath, 'business'.$insertBusiness->rfc.'.'.$ext);
+                                   
+                                
+                                    $fileUpdate         = DB::table('business')
+                                                                ->where('pkBusiness','=',$insertBusiness->pkBusiness)
+                                                                ->where('status','=',1)
+                                                                ->update(array("image" => 'business'.$insertBusiness->rfc.'.'.$ext));
+                                    
+                                    if($fileUpdate > 0){     
+                                        
+                                    }else{
+                                     $flag = "false";   
+                                    }
+                                   // return $arrayContacts;
+                                    foreach($arrayContacts as $item){
+                                    
+                                       $insertContacts                = new Contacts_by_business;
+                                       $insertContacts->fkBusiness    = $insertBusiness->pkBusiness;
+                                       $insertContacts->name          = $item[0];
+                                       $insertContacts->mail          = $item[2];
+                                       $insertContacts->area          = $item[1];
+                                       $insertContacts->phone         = $item[3];
+                                       $insertContacts->mobile_phone  = $item[5];
+                                       $insertContacts->status        = 1;
+                                       
+                                        if($insertContacts->save()){
+                                        }else{
+                                         $flag         = "false";  
+                                          $message    .= "Error al crear registro contactos \n";
+                                        }
+                                     
+                                    }
+                                }else{
+                                    $flag           = "false";
+                                    $message    .= "Error al crear registro \n";
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                
+                if($flag == "true"){
+                    DB::commit();
+                   return \Response::json(array(
+                                  "valid"       => $message,
+                                  "id"        => $insertBusiness->pkBusiness
+                                ));   
+                }else{
+                    DB::rollback(); 
+                    return $message;
+                }
+        } catch (\Exception $e) {
+                DB::rollback(); 
+                //return "Error del sistema, favor de contactar al desarrollador";
+                return $e->getMessage();
+        }  
+        }
+        
+        public function viewBussines(){
+    
+         $bussines = DB::table('business as b')
+                       ->join('categories as c','c.pkCategory','=','b.fkCategory')
+                       ->join('commercial_business as g','g.pkCommercial_business','=','b.fkComercial_business')
+                       ->join('business_origin as o','o.pkBusiness_origin','=','b.fKOrigin')
+                       ->select('b.pkBusiness'
+                               ,'b.name'
+                               ,'o.name as fKOrigin'
+                               ,'c.name as category'
+                               ,'g.name as giro'
+                               ,'b.stateType'
+                               ,'b.date_register'
+                                ,DB::raw('(SELECT description'
+                                         . ' FROM activities as a'
+                                         . ' WHERE a.status = 1'
+                                         . ' AND a.execution_date IS NOT NULL'
+                                         . ' AND a.fkBusiness = b.pkBusiness'
+                                         . ' ORDER BY pkActivities desc limit 1) as lastActivity')
+                                ,DB::raw('(SELECT description'
+                                         . ' FROM activities as a'
+                                         . ' WHERE a.status = 1'
+                                         . ' AND a.fkBusiness = b.pkBusiness'
+                                         . ' AND a.execution_date IS NULL'
+                                         . ' ORDER BY pkActivities desc limit 1) as nextActivity')
+                                    ,DB::raw('(SELECT final_date'
+                                         . ' FROM activities as a'
+                                         . ' WHERE a.status = 1'
+                                         . ' AND a.fkBusiness = b.pkBusiness'
+                                         . ' AND a.execution_date IS NULL'
+                                         . ' ORDER BY pkActivities desc limit 1) as finalActivity')
+                               ,DB::raw('(SELECT name'
+                                         . ' FROM contacts_by_business as cb'
+                                         . ' WHERE cb.status = 1'
+                                         . ' AND cb.fkBusiness = b.pkBusiness'
+                                         . ' ORDER BY pkContact_by_business ASC LIMIT 1) as nameContact')
+                               ,DB::raw('(SELECT mail'
+                                         . ' FROM contacts_by_business as cb'
+                                         . ' WHERE cb.status = 1'
+                                         . ' AND cb.fkBusiness = b.pkBusiness'
+                                         . ' ORDER BY pkContact_by_business ASC LIMIT 1) as mailContact')
+                               ,DB::raw('(SELECT phone'
+                                         . ' FROM contacts_by_business as cb'
+                                         . ' WHERE cb.status = 1'
+                                         . ' AND cb.fkBusiness = b.pkBusiness'
+                                         . ' ORDER BY pkContact_by_business ASC LIMIT 1) as phoneContact')
+                               ,DB::raw('(SELECT mobile_phone'
+                                         . ' FROM contacts_by_business as cb'
+                                         . ' WHERE cb.status = 1'
+                                         . ' AND cb.fkBusiness = b.pkBusiness'
+                                         . ' ORDER BY pkContact_by_business ASC LIMIT 1) as mobile_phone')
+                                    ,DB::raw('(SELECT count(pkQuotations)'
+                                         . ' FROM quotations as q'
+                                         . ' WHERE q.status = 1'
+                                         . ' AND q.fkBusiness = b.pkBusiness'           
+                                         . ' AND q.quotations_status = 5) as salesPay')
+                                       ,DB::raw('(SELECT count(pkQuotations)'
+                                         . ' FROM quotations as q'
+                                         . ' WHERE q.status = 1'
+                                         . ' AND q.fkBusiness = b.pkBusiness'   
+                                         . ' AND (q.quotations_status = 4 OR q.quotations_status = 3)) as salesLoss')
+                                       ,DB::raw('(SELECT count(pkQuotations)'
+                                         . ' FROM quotations as q'
+                                         . ' WHERE q.status = 1'
+                                         . ' AND q.fkBusiness = b.pkBusiness'   
+                                         . ' AND (q.quotations_status = 2 OR q.quotations_status = 1)) as quotations')
+                                       ,DB::raw('(SELECT count(pkOpportunities)'
+                                         . ' FROM opportunities as q'
+                                         . ' WHERE q.status = 1'
+                                         . ' AND q.fkBusiness = b.pkBusiness'   
+                                         . ' AND q.opportunities_status = 5) as oportunityAproved')
+                                       ,DB::raw('(SELECT count(pkOpportunities)'
+                                         . ' FROM opportunities as q'
+                                         . ' WHERE q.status = 1'
+                                         . ' AND q.fkBusiness = b.pkBusiness'   
+                                         . ' AND (q.opportunities_status = 4 OR q.opportunities_status = 3)) as oportunityLoss')
+                                       ,DB::raw('(SELECT count(pkOpportunities)'
+                                         . ' FROM opportunities as q'
+                                         . ' WHERE q.status = 1'
+                                         . ' AND q.fkBusiness = b.pkBusiness'   
+                                         . ' AND (q.opportunities_status = 1 OR q.opportunities_status = 2)) as oportunityOpen')
+                                         ,DB::raw('(SELECT SUM(number_places)'
+                                         . ' FROM quotations as q'
+                                         . ' INNER JOIN quotations_detail AS d ON d.fkQuotations = q.pkQuotations'
+                                         . ' WHERE q.status = 1'
+                                         . ' AND d.isSelected = 1'
+                                         . ' AND q.fkBusiness = b.pkBusiness' 
+                                         . ' AND q.quotations_status = 5) as salesPlaces')
+                               ,DB::raw('(SELECT SUM(price)'
+                                         . ' FROM quotations as q'
+                                         . ' INNER JOIN quotations_detail AS d ON d.fkQuotations = q.pkQuotations'
+                                         . ' WHERE q.status = 1'
+                                         . ' AND d.isSelected = 1'
+                                         . ' AND q.fkBusiness = b.pkBusiness' 
+                                         . ' AND q.quotations_status = 5) as salesMont')
+                                             
+                               )
+                       ->where('b.status','=',1)
+                       ->get();
+        
+          $BussinessAddRes = DB::table('business as b')
+                       ->join('categories as c','c.pkCategory','=','b.fkCategory')
+                       ->join('commercial_business as g','g.pkCommercial_business','=','b.fkComercial_business')
+                       ->join('business_origin as o','o.pkBusiness_origin','=','b.fKOrigin')
+                       ->select('b.pkBusiness'
+                               ,'b.name'
+                               ,'o.name as fKOrigin'
+                               ,'c.name as category'
+                               ,'g.name as giro'
+                               ,'b.stateType'
+                               ,'b.date_register'                             
+                               ,DB::raw('(SELECT SUM(price)'
+                                         . ' FROM quotations as q'
+                                         . ' INNER JOIN quotations_detail AS d ON d.fkQuotations = q.pkQuotations'
+                                         . ' WHERE q.status = 1'
+                                         . ' AND d.isSelected = 1'
+                                         . ' AND q.fkBusiness = b.pkBusiness' 
+                                         . ' AND q.quotations_status = 5) as salesMont')
+                                             
+                               )
+                        ->orderby('b.date_register','DESC')
+                        ->get();
+          
+           $BussinessMoreRes = DB::table('business as b')
+                       ->join('categories as c','c.pkCategory','=','b.fkCategory')
+                       ->join('commercial_business as g','g.pkCommercial_business','=','b.fkComercial_business')
+                       ->join('business_origin as o','o.pkBusiness_origin','=','b.fKOrigin')
+                       ->select('b.pkBusiness'
+                               ,'b.name'
+                               ,'o.name as fKOrigin'
+                               ,'c.name as category'
+                               ,'g.name as giro'
+                               ,'b.stateType'
+                               ,'b.date_register'                             
+                               ,DB::raw('(SELECT SUM(price)'
+                                         . ' FROM quotations as q'
+                                         . ' INNER JOIN quotations_detail AS d ON d.fkQuotations = q.pkQuotations'
+                                         . ' WHERE q.status = 1'
+                                         . ' AND d.isSelected = 1'
+                                         . ' AND q.fkBusiness = b.pkBusiness' 
+                                         . ' AND q.quotations_status = 5) as salesMont')
+                                             
+                               )
+                        ->orderby('b.date_register','DESC')
+                        ->get();
+                 
+        return view('empresas.verEmpresas')->with('bussines',$bussines)
+                                           ->with('BussinessAddRes',$BussinessAddRes)
+                                           ->with('BussinessMoreRes',$BussinessMoreRes);
+    }
+    
+       public function viewBussinesProspect(){
+           $bussines = DB::table('business as b')
+                       ->join('categories as c','c.pkCategory','=','b.fkCategory')
+                       ->join('commercial_business as g','g.pkCommercial_business','=','b.fkComercial_business')
+                       ->join('business_origin as o','o.pkBusiness_origin','=','b.fKOrigin')
+                       ->select('b.pkBusiness'
+                               ,'b.name'
+                               ,'o.name as fKOrigin'
+                               ,'c.name as category'
+                               ,'g.name as giro'
+                               ,'b.stateType'
+                               ,'b.date_register'
+                               ,DB::raw('(SELECT name'
+                                         . ' FROM contacts_by_business as cb'
+                                         . ' WHERE cb.status = 1'
+                                         . ' AND cb.fkBusiness = b.pkBusiness'
+                                         . ' ORDER BY pkContact_by_business ASC LIMIT 1) as nameContact')
+                               ,DB::raw('(SELECT mail'
+                                         . ' FROM contacts_by_business as cb'
+                                         . ' WHERE cb.status = 1'
+                                         . ' AND cb.fkBusiness = b.pkBusiness'
+                                         . ' ORDER BY pkContact_by_business ASC LIMIT 1) as mailContact')
+                               ,DB::raw('(SELECT phone'
+                                         . ' FROM contacts_by_business as cb'
+                                         . ' WHERE cb.status = 1'
+                                         . ' AND cb.fkBusiness = b.pkBusiness'
+                                         . ' ORDER BY pkContact_by_business ASC LIMIT 1) as phoneContact')
+                               ,DB::raw('(SELECT mobile_phone'
+                                         . ' FROM contacts_by_business as cb'
+                                         . ' WHERE cb.status = 1'
+                                         . ' AND cb.fkBusiness = b.pkBusiness'
+                                         . ' ORDER BY pkContact_by_business ASC LIMIT 1) as mobile_phone')
+                               ,DB::raw('(SELECT count(pkQuotations)'
+                                         . ' FROM quotations q'
+                                         . ' WHERE q.status = 1'
+                                         . ' AND q.fkBusiness = b.pkBusiness) as quotations')
+                               ,DB::raw('(SELECT count(pkOpportunities)'
+                                         . ' FROM opportunities o'
+                                         . ' WHERE o.status = 1'
+                                         . ' AND o.fkBusiness = b.pkBusiness) as oportunity')
+                               )                                
+                       ->where('b.status','=',1)
+                       ->get();
+
+                 
+        return view('empresas.verEmpresasProspecto')->with('bussines',$bussines); 
+       }
+       
+       public function verEmpresasCliente(){
+             $bussines = DB::table('business as b')
+                       ->join('categories as c','c.pkCategory','=','b.fkCategory')
+                       ->join('commercial_business as g','g.pkCommercial_business','=','b.fkComercial_business')
+                       ->join('business_origin as o','o.pkBusiness_origin','=','b.fKOrigin')
+                       ->select('b.pkBusiness'
+                               ,'b.name'
+                               ,'o.name as fKOrigin'
+                               ,'c.name as category'
+                               ,'g.name as giro'
+                               ,'b.stateType'
+                               ,'b.date_register'
+                               ,DB::raw('(SELECT name'
+                                         . ' FROM contacts_by_business as cb'
+                                         . ' WHERE cb.status = 1'
+                                         . ' AND cb.fkBusiness = b.pkBusiness'
+                                         . ' ORDER BY pkContact_by_business ASC LIMIT 1) as nameContact')
+                               ,DB::raw('(SELECT mail'
+                                         . ' FROM contacts_by_business as cb'
+                                         . ' WHERE cb.status = 1'
+                                         . ' AND cb.fkBusiness = b.pkBusiness'
+                                         . ' ORDER BY pkContact_by_business ASC LIMIT 1) as mailContact')
+                               ,DB::raw('(SELECT phone'
+                                         . ' FROM contacts_by_business as cb'
+                                         . ' WHERE cb.status = 1'
+                                         . ' AND cb.fkBusiness = b.pkBusiness'
+                                         . ' ORDER BY pkContact_by_business ASC LIMIT 1) as phoneContact')
+                               ,DB::raw('(SELECT mobile_phone'
+                                         . ' FROM contacts_by_business as cb'
+                                         . ' WHERE cb.status = 1'
+                                         . ' AND cb.fkBusiness = b.pkBusiness'
+                                         . ' ORDER BY pkContact_by_business ASC LIMIT 1) as mobile_phone')
+                                ,DB::raw('(SELECT count(pkQuotations)'
+                                         . ' FROM quotations q'
+                                         . ' WHERE q.status = 1'
+                                         . ' AND q.quotations_status = 5'
+                                         . ' AND q.fkBusiness = b.pkBusiness) as quotations'))
+                       ->where('b.status','=',1)
+                       ->get();
+        
+                 
+        return view('empresas.verEmpresasCliente')->with('bussines',$bussines); 
+       }
+       
+       public function verEmpresasLeads(){
+             $bussines = DB::table('business as b')
+                       ->join('categories as c','c.pkCategory','=','b.fkCategory')
+                       ->join('commercial_business as g','g.pkCommercial_business','=','b.fkComercial_business')
+                       ->join('business_origin as o','o.pkBusiness_origin','=','b.fKOrigin')
+                       ->select('b.pkBusiness'
+                               ,'b.name'
+                               ,'o.name as fKOrigin'
+                               ,'c.name as category'
+                               ,'g.name as giro'
+                               ,'b.stateType'
+                               ,'b.date_register'
+                               ,DB::raw('(SELECT name'
+                                         . ' FROM contacts_by_business as cb'
+                                         . ' WHERE cb.status = 1'
+                                         . ' AND cb.fkBusiness = b.pkBusiness'
+                                         . ' ORDER BY pkContact_by_business ASC LIMIT 1) as nameContact')
+                               ,DB::raw('(SELECT mail'
+                                         . ' FROM contacts_by_business as cb'
+                                         . ' WHERE cb.status = 1'
+                                         . ' AND cb.fkBusiness = b.pkBusiness'
+                                         . ' ORDER BY pkContact_by_business ASC LIMIT 1) as mailContact')
+                               ,DB::raw('(SELECT phone'
+                                         . ' FROM contacts_by_business as cb'
+                                         . ' WHERE cb.status = 1'
+                                         . ' AND cb.fkBusiness = b.pkBusiness'
+                                         . ' ORDER BY pkContact_by_business ASC LIMIT 1) as phoneContact')
+                               ,DB::raw('(SELECT mobile_phone'
+                                         . ' FROM contacts_by_business as cb'
+                                         . ' WHERE cb.status = 1'
+                                         . ' AND cb.fkBusiness = b.pkBusiness'
+                                         . ' ORDER BY pkContact_by_business ASC LIMIT 1) as mobile_phone')
+                               ,DB::raw('(SELECT pkQuotations'
+                                         . ' FROM quotations q'
+                                         . ' WHERE q.status = 1'
+                                         . ' AND q.quotations_status != 5'
+                                         . ' AND q.fkBusiness = b.pkBusiness limit 1) as quotations')
+                               ,DB::raw('(SELECT pkOpportunities'
+                                         . ' FROM opportunities o'
+                                         . ' WHERE o.status = 1'
+                                         . ' AND o.opportunities_status != 5'
+                                         . ' AND o.fkBusiness = b.pkBusiness limit 1) as oportunity')
+                               )
+                       ->where('b.status','=',1)
+                       ->get();
+           
+        
+                 
+        return view('empresas.verEmpresasLeads')->with('bussines',$bussines); 
+       }
+    
+        public function deleteBusiness(Request $request){
+        $pkBusiness         = $request->input("pkBusiness");
+            
+            $categoriesUpdate   = DB::table("business")
+                                    ->where('pkBusiness','=',$pkBusiness)
+                                    ->where('status','=',1)
+                                    ->update(array("status" => 0));
+            
+            if($categoriesUpdate >= 1){
+                return "true";
+            }else{
+                return "false";
+            }
+    }
+    
+        public function viewupdateBusiness(Request $request){
+           $pkBusiness         = $request->input("pkBusiness");
+           
+            $Bussines   = DB::table('business')
+                            ->select('pkBusiness'
+                                    ,'rfc'
+                                    ,'name'
+                                    ,'mail'
+                                    ,'address'
+                                    ,'city'
+                                    ,'state'
+                                    ,'country'
+                                    ,'fkComercial_business'
+                                    ,'fkCategory'
+                                    ,'fkUser'
+                                    ,'fKOrigin'
+                                    ,'image'
+                                    ,'web'
+                                    ,'fkBusiness_type'
+                                    ,'fkBusiness_status'
+                                    ,'is_active'
+                                    ,'date_register'
+                                    ,'stateType')
+                              ->where('pkBusiness','=',$pkBusiness)
+                              ->first();
+            
+              
+            $commercial_business  = DB::table("commercial_business")
+                                    ->where('commercial_business.status','=',1)
+                                    ->get();
+            
+            $categories        = DB::table("categories")
+                                    ->where('categories.status','=',1)
+                                    ->get();
+            
+            $states            = DB::table('entidad')
+                                   ->select('nom_ent'
+                                           ,'cve_ent')
+                                   ->get();
+            
+            $municipality      = DB::table('municipio')
+                                   ->select('nom_mun'
+                                           ,'cve_mun')
+                                   ->where('cve_ent','=',$Bussines->state)
+                                   ->get();
+            
+            $origin            = DB::table('business_origin')
+                                   ->get();
+
+              $view = view('empresas.editarEmpresa', array(
+                    "Bussines"            => $Bussines,
+                    "commercial_business" => $commercial_business,
+                    "categories"          => $categories,
+                    "states"              => $states,
+                    "municipality"        => $municipality,
+                    "origin"              => $origin
+                        ))->render();
+        
+            return \Response::json(array(
+                                  "valid"       => "true",
+                                  "view"        => $view
+                                ));            
+            
+        }
+        
+        public function editupdateBusiness(Request $request){
+            $firstName          = htmlentities ($request->input("firstName"));
+            $domicilio          = htmlentities ($request->input("domicilio"));
+            $city               = $request->input("city");
+            $state              = $request->input("state");
+            $web                = $request->input("web");
+            $giro               = $request->input("giro");
+            $cat                = $request->input("cat");
+            $country            = $request->input("country");
+            $origen             = htmlentities ($request->input("origen"));
+            $image              = $request->file('image');
+            $user               = Session::get('pkUser');
+            $pkBusiness         = $request->input('pkBusiness');
+            $date               = date("Y-m-d");
+            $flag               = "true";
+            $message            = "true";
+            DB::beginTransaction();
+
+            try { 
+                if($image != ''){ 
+                    if(file_exists ($image)){
+                        $nameFile = $image->getClientOriginalName();
+                        if($nameFile!=''){
+                            $ext            = $image->extension();
+                            
+                            if(($ext == 'png') ||($ext == 'jpg')||($ext == 'jpeg')){
+                               
+                                   $destinationPath = public_path('/images/business/');
+                                    $image->move($destinationPath, 'businessupdate'.$nameFile.'.'.$ext);
+                                
+                                    $fileUpdate         = DB::table('business')
+                                                                ->where('pkBusiness','=',$pkBusiness)
+                                                                ->where('status','=',1) 
+                                                                ->update(["image" => 'businessupdate'.$nameFile.'.'.$ext
+                                                                              ,"rfc"     => $firstName
+                                                                              ,"name"    => $firstName
+                                                                              ,"address" => $domicilio
+                                                                              ,"city" => $city
+                                                                              ,"country"     =>$country
+                                                                              ,"state" => $state
+                                                                              ,"web" => $web
+                                                                              ,"fkComercial_business" => $giro
+                                                                              ,"fkCategory" => $cat
+                                                                              ,"fKOrigin" =>  $origen]);
+                                    
+       
+                                    
+                                    if($fileUpdate >= 1){     
+                                        
+                                    }else{
+                                     $flag = "false1";   
+                                    }
+ 
+                                }else{
+
+                                }
+                            }
+                        }
+                    }else{
+                
+                          $fileUpdate2         = DB::table('business')
+                                                                ->where('pkBusiness','=',$pkBusiness)
+                                                                ->where('status','=',1)
+                                                                ->update(["rfc"     => $firstName
+                                                                              ,"name"    => $firstName
+                                                                              ,"address" => $domicilio
+                                                                              ,"city" => $city
+                                                                              ,"country"     =>$country
+                                                                              ,"state" => $state
+                                                                              ,"web" => $web
+                                                                              ,"fkComercial_business" => $giro
+                                                                              ,"fkCategory" => $cat
+                                                                              ,"fKOrigin" =>  $origen]);
+                                    
+                                    if($fileUpdate2 > 0){     
+                                    }else{
+                                     $flag = "false2";   
+                                    }
+                    }
+   
+                if($flag == "true"){
+                    DB::commit();
+                    return $flag;
+                }else{
+                    DB::rollback(); 
+                    return $flag;
+                }
+          } catch (\Exception $e) {
+                DB::rollback(); 
+                //return "Error del sistema, favor de contactar al desarrollador";
+                return $e->getMessage();
+          }   
+        }
+        
+        public function viewBusinessContact(Request $request){
+           $pkBusiness         = $request->input("pkBusiness");
+           
+        $bussinesContact   = DB::table('contacts_by_business')
+                            ->select('pkContact_by_business'
+                                    ,'fkBusiness'
+                                    ,'name'
+                                    ,'mail'
+                                    ,'area'
+                                    ,'phone'
+                                    ,'mobile_phone')
+                              ->where('fkBusiness','=',$pkBusiness)
+                              ->where('status','=',1)
+                              ->get();
+        
+            $busssines    =  DB::table('business')
+                               ->select('name'
+                                       ,'pkBusiness')
+                               ->where('pkBusiness','=',$pkBusiness)
+                               ->first();
+          
+
+              $view = view('empresas.verContactos', array(
+                    "bussinesContact"  => $bussinesContact,
+                    "busssines"        => $busssines,
+                        ))->render();
+        
+            return \Response::json(array(
+                                  "valid"       => "true",
+                                  "view"        => $view
+                                ));           
+        }
+        
+        public function deleteBusinessContact(Request $request){
+            
+            $pkContact         = $request->input("pkContact");
+            
+            $categoriesUpdate   = DB::table("contacts_by_business")
+                                    ->where('pkContact_by_business','=',$pkContact)
+                                    ->where('status','=',1)
+                                    ->update(array("status" => 0));
+            
+            if($categoriesUpdate >= 1){
+                return "true";
+            }else{
+                return "false";
+            }
+        }
+        
+        public function addContactBusinessDB(Request $request){
+
+            $arrayContacts      = json_decode($request->input('arrayContacts'));
+            $pkBussiness        = $request->input('pkBussiness');
+            $flag               = "true";
+            $message            = "true";
+            DB::beginTransaction();
+             
+            try { 
+                                    foreach($arrayContacts as $item){
+                                    
+                                       $insertContacts                = new Contacts_by_business;
+                                       $insertContacts->fkBusiness    = $pkBussiness;
+                                       $insertContacts->name          = $item[0];
+                                       $insertContacts->mail          = $item[2];
+                                       $insertContacts->area          = $item[1];
+                                       $insertContacts->phone         = $item[3];
+                                       $insertContacts->mobile_phone  = $item[5];
+                                       $insertContacts->status        = 1;
+                                       
+                                        if($insertContacts->save()){
+                                        }else{
+                                         $flag         = "false";  
+                                          $message    .= "Error al crear registro contactos \n";
+                                        }
+                                     
+                                    }
+                            
+                    
+                if($flag == "true"){
+                    DB::commit();
+                    return $message;
+                }else{
+                    DB::rollback(); 
+                    return $message;
+                }
+        } catch (\Exception $e) {
+                DB::rollback(); 
+                //return "Error del sistema, favor de contactar al desarrollador";
+                return $e->getMessage();
+        }    
+        }
+       
+        public function detEmpresa($id){
+            $Bussiness = DB::table('business as b')
+                           ->join('categories as c','c.pkCategory','=','b.fkCategory')
+                           ->join('commercial_business as cb','cb.pkCommercial_business','=','b.fkComercial_business')
+                           ->join('business_origin as o','o.pkBusiness_origin','=','b.fKOrigin')
+                           ->select('b.name'
+                                   ,'address'
+                                   ,'city'
+                                   ,'state'
+                                   ,'country'
+                                   ,'web'
+                                   ,'image'
+                                   ,'pkBusiness'
+                                   ,'c.name as category'
+                                   ,'cb.name as giro'
+                                   ,'o.name as origin')
+                        ->where('b.status','=',1)
+                        ->where('b.pkBusiness','=',$id)
+                        ->first();
+            
+            
+            $contact  = DB::table('contacts_by_business as c')
+                          ->select('name'
+                                  ,'mail'
+                                  ,'area'
+                                  ,'phone'
+                                  ,'mobile_phone'
+                                  ,'pkContact_by_business'
+                                  )
+                          ->where('status','=',1)
+                          ->where('fkBusiness','=',$Bussiness->pkBusiness)
+                          ->get();
+            
+             $quotation = DB::table('quotations as o')
+                            ->join('business as b','b.pkBusiness','=','o.fkBusiness')
+                            ->join('users as u','u.pkUser','=','o.fkUser')
+                            ->join('contacts_by_business as c','c.pkContact_by_business','=','o.fkContact_by_business')
+                            ->join('level_interest as l','l.pkLevel_interest','=','o.fkLevel_interest')
+                            ->select('o.pkQuotations'
+                                    ,'o.name'
+                                    ,'o.folio'
+                                    ,'b.name as bussines'
+                                    ,'u.full_name as agent'
+                                    ,'c.name as contact'
+                                    ,'l.text as level'
+                                    ,'l.color'
+                                    ,'o.final_date'
+                                    ,'o.register_day'
+                                    ,'o.register_hour'
+                                    ,'o.quotations_status as quotation_status'
+                                    ,DB::raw('(SELECT description'
+                                         . ' FROM activities as a'
+                                         . ' WHERE a.status = 1'
+                                         . ' AND a.execution_date IS NOT NULL'
+                                         . ' AND a.pkQuotations = o.pkQuotations'
+                                         . ' ORDER BY pkActivities desc limit 1) as lastActivity')
+                                    ,DB::raw('(SELECT description'
+                                         . ' FROM activities as a'
+                                         . ' WHERE a.status = 1'
+                                         . ' AND a.pkQuotations = o.pkQuotations'
+                                         . ' ORDER BY pkActivities desc limit 1) as nextActivity')
+                                    ,DB::raw('(SELECT final_date'
+                                         . ' FROM activities as a'
+                                         . ' WHERE a.status = 1'
+                                         . ' AND a.pkQuotations = o.pkQuotations'
+                                         . ' ORDER BY pkActivities desc limit 1) as finalActivity')
+                                    ,DB::raw("(CASE WHEN o.quotations_status = 1 THEN 'Creada' 
+                                                    WHEN o.quotations_status = 2 THEN 'Abierta'
+                                                    WHEN o.quotations_status = 3 THEN 'Rechazada'
+                                                    WHEN o.quotations_status = 4 THEN 'Cancelada'
+                                                    WHEN o.quotations_status = 5 THEN 'Cerrada'
+                                                    ELSE 'N/A' END) as quotations_status"))
+                            ->where('o.status','=',1)
+                            ->where('b.pkBusiness','=',$Bussiness->pkBusiness)
+                            ->get();
+             
+             $oportunity = DB::table('opportunities as o')
+                            ->join('business as b','b.pkBusiness','=','o.fkBusiness')
+                            ->join('users as u','u.pkUser','=','o.fkUser')
+                            ->join('contacts_by_business as c','c.pkContact_by_business','=','o.fkContact_by_business')
+                            ->join('level_interest as l','l.pkLevel_interest','=','o.fkLevel_interest')
+                            ->join('courses as cu','cu.pkCourses','=','o.number_courses')
+                            ->join('payment_methods as p','p.pkPayment_methods','=','o.fkPayment_methods')
+                            ->select('o.pkOpportunities'
+                                    ,'o.name'
+                                    ,'o.folio'
+                                    ,'b.name as bussines'
+                                    ,'o.register_day'
+                                    ,'o.register_hour'
+                                    ,'b.name as bussines'
+                                    ,'u.full_name as agent'
+                                    ,'c.name as contact'
+                                    ,'l.text as level'
+                                    ,'l.color'
+                                    ,'o.opportunities_status as opportunities_statu'
+                                    ,DB::raw('(SELECT description'
+                                         . ' FROM activities as a'
+                                         . ' WHERE a.status = 1'
+                                         . ' AND a.execution_date IS NOT NULL'
+                                         . ' AND a.pkOpportunities = o.pkOpportunities'
+                                         . ' ORDER BY pkActivities desc limit 1) as lastActivity')
+                                    ,DB::raw('(SELECT description'
+                                         . ' FROM activities as a'
+                                         . ' WHERE a.status = 1'
+                                         . ' AND a.pkOpportunities = o.pkOpportunities'
+                                         . ' ORDER BY pkActivities desc limit 1) as nextActivity')
+                                    ,DB::raw('(SELECT final_date'
+                                         . ' FROM activities as a'
+                                         . ' WHERE a.status = 1'
+                                         . ' AND a.pkOpportunities = o.pkOpportunities'
+                                         . ' ORDER BY pkActivities desc limit 1) as finalActivity')
+                                    ,DB::raw("(CASE WHEN o.opportunities_status = 1 THEN 'Creada' 
+                                                    WHEN o.opportunities_status = 2 THEN 'Abierta'
+                                                    WHEN o.opportunities_status = 3 THEN 'Rechazada'
+                                                    WHEN o.opportunities_status = 4 THEN 'Cancelada'
+                                                    WHEN o.opportunities_status = 5 THEN 'Cotizada'
+                                                    ELSE 'N/A' END) as opportunities_status")
+                                    ,'o.number_employees'
+                                    ,'cu.name as course'
+                                    ,'o.number_places'
+                                    ,'o.price_total'
+                                    ,'o.necesites'
+                                    ,'o.comment'
+                                    ,'p.name as typePayment'
+                                    ,'o.isBudget')
+                            ->where('o.status','=',1)
+                            ->where('b.pkBusiness','=',$Bussiness->pkBusiness)
+                            ->get();
+             
+             //info para crear una cotizacion
+             $bussines  = DB::table('business')
+                           ->select('name'
+                                   ,'pkBusiness')
+                           ->where('status','=',1)
+                           ->get();
+           
+           $agent     = DB::table('users')
+                           ->select('full_name'
+                                   ,'pkUser')
+                           ->where('status','=',1)
+                           ->where('fkUser_type','!=',1)
+                           ->where('privileges','like','%paticipate_oportunity:1%')
+                           ->get();
+            
+            $level      = DB::table('level_interest')
+                             ->select('pkLevel_interest'
+                                     ,'text')
+                             ->where('status','=',1)
+                             ->get();
+            
+            
+            $courses   = DB::table('courses')
+                           ->select('pkCourses'
+                                   ,'name')
+                           ->where('status','=',1)
+                           ->get();
+            
+            
+            $payment    = DB::table('payment_methods')
+                             ->select('pkPayment_methods'
+                                     ,'name')
+                             ->where('status','=',1)
+                             ->get();
+            
+             $businessQuery      = DB::table("business")
+                                    ->where('status','=',1)
+                                    ->orderBy("name","asc")
+                                    ->get();
+            
+            $usersQuery      = DB::table("users")
+                                    ->join('user_type','user_type.pkUser_type','=','users.fkUser_type')
+                                    ->where('users.status','=',1)
+                                    ->where('user_type.status','=',1)
+                                    ->orderBy("users.full_name","asc")
+                                    ->select(
+                                    'users.pkUser as pkUser',
+                                    'users.full_name as full_name',
+                                    'user_type.name as type_name'
+                                    )
+                                    ->get();
+            
+            $activitiesTypeQuery      = DB::table("activities_type")
+                                    ->where('status','=',1)
+                                    ->orderBy("text","asc")
+                                    ->get();
+            
+             $option             = '<option value="-1">Selecciona el tipo de negocio</option><option value="0_N">Prospecto</option>';
+            
+            $opportunitiesQuery = DB::table("opportunities")
+                                    ->where('fkBusiness','=',$Bussiness->pkBusiness)
+                                    ->where('opportunities_status','!=',2)
+                                    ->where('status','=',1)
+                                    ->orderBy("name","asc")
+                                    ->get();
+            
+            $quotationsQuery    = DB::table("quotations")
+                                    ->where('fkBusiness','=',$Bussiness->pkBusiness)
+                                    ->where('status','=',1)
+                                    ->orderBy("name","asc")
+                                    ->get();
+            
+            foreach ($opportunitiesQuery as $opportunitiesInfo) {
+                $option .= '<option value="'.$opportunitiesInfo->pkOpportunities.'_o">Folio #'.html_entity_decode($opportunitiesInfo->folio).'(Oportunidad)</option>';
+            }
+            
+            foreach ($quotationsQuery as $quotationsInfo) {
+                $option .= '<option value="'.$quotationsInfo->pkQuotations.'_c">Folio #'.html_entity_decode($quotationsInfo->folio).'(Cotizaci&oacute;n)</option>';
+            }
+            
+            $arrayLineTime = [];
+            $cont = 0;
+            
+             $lineTimeOportunity  = DB::table('opportunities as o')
+                                       ->join('users as u','u.pkUser','=','o.fkUser')
+                                       ->select('o.folio'
+                                               ,'u.full_name'
+                                               ,'o.register_day'
+                                               ,'o.register_hour'
+                                               ,'o.color'
+                                               ,'o.icon')
+                                       ->where('o.fkBusiness','=',$Bussiness->pkBusiness)
+                                       ->orderby('register_date','asc')
+                                       ->orderby('register_hour','asc')
+                                       ->get();
+             
+              $lineTimeQuotation = DB::table('quotations as q')
+                                    ->join('users as u','u.pkUser','=','q.fkUser')
+                                    ->select('q.folio'
+                                             ,'q.register_day'
+                                             ,'u.full_name'
+                                             ,'q.color'
+                                             ,'q.icon'
+                                             ,'q.register_hour')
+                                    ->where('q.fkBusiness','=',$Bussiness->pkBusiness)
+                                    ->orderby('register_date','asc')
+                                    ->orderby('register_hour','asc')
+                                    ->get();
+              
+                     
+            
+              $lineTimeActivitys = DB::table('activities as a')
+                                    ->join('activities_type as t','t.pkActivities_type','=','a.fkActivities_type')
+                                    ->join('users as u','u.pkUser','=','a.fkUser')
+                                    ->select('a.description'
+                                             ,'a.register_date'
+                                             ,'u.full_name'
+                                             ,'t.color'
+                                             ,'t.icon'
+                                             ,'a.register_hour')
+                                    ->where('a.fkBusiness','=',$Bussiness->pkBusiness)
+                                    ->orderby('register_date','asc')
+                                    ->orderby('register_hour','asc')
+                                    ->get();
+              
+                foreach($lineTimeQuotation as $itemQuotation){
+
+                  $arrayLineTime[$cont] = array('desc'         => "Cotizacion folio: ".$itemQuotation->folio." creada",
+                                               'full_name'     => $itemQuotation->full_name,
+                                               'register_day'  => $itemQuotation->register_day,
+                                               'register_hour' => $itemQuotation->register_hour,
+                                               'color'         => $itemQuotation->color,
+                                               'icon'          => $itemQuotation->icon,
+                                               'type'          => "quotation");
+                          
+                   $cont++;
+              }
+              
+              foreach($lineTimeOportunity as $itemOportunity){
+
+                  $arrayLineTime[$cont] = array('desc'         => "Oportunidad folio: ".$itemOportunity->folio." creada",
+                                               'full_name'     => $itemOportunity->full_name,
+                                               'register_day'  => $itemOportunity->register_day,
+                                               'register_hour' => $itemOportunity->register_hour,
+                                               'color'         => $itemOportunity->color,
+                                               'icon'          => $itemOportunity->icon,
+                                               'type'          => "oportunidad");
+                          
+                   $cont++;
+              }
+              
+              foreach($lineTimeActivitys as $itemActivity){
+
+                  $arrayLineTime[$cont] = array('desc'         => $itemActivity->description,
+                                               'full_name'     => $itemActivity->full_name,
+                                               'register_day'  => $itemActivity->register_date,
+                                               'register_hour' => $itemActivity->register_hour,
+                                               'color'         => $itemActivity->color,
+                                               'icon'          => $itemActivity->icon,
+                                               'type'          => "actividad");
+                          
+                  $cont++;
+              }
+
+              usort($arrayLineTime,array($this, "sortFunction"));
+              
+             // dd($arrayLineTime);
+              
+              $filterTypeActivity = DB::table('activities_type')
+                                      ->where('status','=',1)
+                                      ->get();
+              
+               $arrayFilter = [];
+               $cont = 0;
+               
+                foreach($filterTypeActivity as $itemActi){
+                   $arrayFilter[$cont] = array('desc'         => $itemActi->text."",
+                                               'id'           => "",
+                                               'type'         => "actividad");
+                   $cont++;
+              }
+               
+                foreach($lineTimeQuotation as $itemQuotation){
+                  $arrayFilter[$cont] = array('desc'         => "Cotizacion folio: ".$itemQuotation->folio."",
+                                              'id'           => "",
+                                              'type'         => "quotation");                          
+                   $cont++;
+              }
+              
+              foreach($lineTimeOportunity as $itemOportunity){
+
+                   $arrayFilter[$cont] = array('desc'         => "Oportunidad folio: ".$itemOportunity->folio."",
+                                               'id'           => "",
+                                               'type'          => "oportunidad");
+                          
+                   $cont++;
+              }
+              
+          
+              
+            return view('empresas.detEmpresa')->with("Bussiness",$Bussiness)
+                                              ->with("contact",$contact)
+                                              ->with("quotation",$quotation)
+                                              ->with("oportunity",$oportunity)
+                                              ->with("bussines",$bussines)
+                                              ->with("agent",$agent)
+                                              ->with("id",$id)
+                                              ->with("level",$level)
+                                              ->with("courses",$courses)
+                                              ->with("payment",$payment)
+                                              ->with("usersQuery",$usersQuery)
+                                              ->with("businessQuery",$businessQuery)
+                                              ->with("option",$option)
+                                              ->with("arrayLineTime",$arrayLineTime)
+                                              ->with("arrayFilter",$arrayFilter)
+                                              ->with("activitiesTypeQuery",$activitiesTypeQuery);
+        }
+        
+       function sortFunction($a, $b) {
+               return strtotime($b["register_day"]." ".$b["register_hour"]) - strtotime($a["register_day"]." ".$a["register_hour"]);
+         }
+        
+        public function searcher(Request $request) {
+
+        $textSearch = $request->input('textSearch');
+        $decodeText = htmlentities($textSearch);
+        $textToSearch = $this->mergeTextToSearch($decodeText);
+
+        $bussiness = DB::table('business')
+                       ->select('pkBusiness'
+                               ,'name')
+                       ->where('name','like','%'.$decodeText.'%')
+                       ->get();
+
+        return view('empresas.search', array(
+            "bussiness" => $bussiness,
+        ));
+    }
+        
+        public function searcherTextBussines(Request $request) {
+
+        $textSearch = $request->input('textSearch');
+        $decodeText = htmlentities($textSearch);
+        $textToSearch = $this->mergeTextToSearch($decodeText);
+
+        $bussiness = DB::table('business')
+                       ->select('pkBusiness'
+                               ,'name')
+                       ->where('name','like','%'.$decodeText.'%')
+                       ->get();
+
+        return view('empresas.searchInput', array(
+            "bussiness" => $bussiness,
+        ));
+    }
+    
+    
+        private function mergeTextToSearch($textToSearch) {
+
+        $response = array();
+        $contPos = 0;
+        $text = $this->changingText($textToSearch);
+
+        foreach ($text[0] as $firstName) {
+            if (isset($text[1])) {
+                foreach ($text[1] as $secondName) {
+                    if (isset($text[2])) {
+                        foreach ($text[2] as $thirdName) {
+                            if (isset($text[3])) {
+                                foreach ($text[3] as $fourthName) {
+                                    if (isset($text[4])) {
+                                        foreach ($text[4] as $fifthName) {
+                                            $response[$contPos] = array($firstName, $secondName, $thirdName, $fourthName, $fifthName);
+                                            $contPos++;
+                                        }
+                                    } else {
+                                        $response[$contPos] = array($firstName, $secondName, $thirdName, $fourthName);
+                                        $contPos++;
+                                    }
+                                }
+                            } else {
+                                $response[$contPos] = array($firstName, $secondName, $thirdName);
+                                $contPos++;
+                            }
+                        }
+                    } else {
+                        $response[$contPos] = array($firstName, $secondName);
+                        $contPos++;
+                    }
+                }
+            } else {
+                $response[$contPos] = $firstName;
+               $contPos++;
+            }
+        }
+        return $response;
+    }
+    
+        private function changingText($text) {
+
+        $textToSearch = explode(" ", $text);
+        $response = array();
+        $valueTemp = "";
+
+        foreach ($textToSearch AS $key => $value) {
+            if (!isset($response[$key])) {
+                $response[$key] = array();
+            }
+            $value = strtolower($value);
+            $valueNew = str_replace("&ntilde;", "n", $value);
+            array_push($response[$key], $valueNew);
+            for ($cont = 0; $cont < strlen($valueNew); $cont++) {
+                if (preg_match('/[n]/i', $valueNew[$cont])) {
+                    if ($value[$cont] != 'n') {
+                        $valueTemp = substr_replace($valueNew, "&" . $valueNew[$cont] . "tilde;", $cont, 1);
+                        array_push($response[$key], $valueTemp);
+                    }
+                }
+            }
+        }
+        return $response;
+    }
+    
+       public function searchBussines($name){
+          $Bussiness = DB::table('business as b')
+                           ->join('categories as c','c.pkCategory','=','b.fkCategory')
+                           ->join('commercial_business as cb','cb.pkCommercial_business','=','b.fkComercial_business')
+                           ->join('business_origin as o','o.pkBusiness_origin','=','b.fKOrigin')
+                           ->select('b.name'
+                                   ,'address'
+                                   ,'city'
+                                   ,'state'
+                                   ,'country'
+                                   ,'web'
+                                   ,'image'
+                                   ,'pkBusiness'
+                                   ,'c.name as category'
+                                   ,'cb.name as giro'
+                                   ,'o.name as origin')
+                        ->where('b.status','=',1)
+                        ->where('b.name','=',$name)
+                        ->first();
+            
+            $contact  = DB::table('contacts_by_business as c')
+                          ->select('name'
+                                  ,'mail'
+                                  ,'area'
+                                  ,'phone'
+                                  ,'mobile_phone'
+                                  ,'pkContact_by_business'
+                                  )
+                          ->where('status','=',1)
+                          ->where('fkBusiness','=',$Bussiness->pkBusiness)
+                          ->get();
+            
+             $quotation = DB::table('quotations as o')
+                            ->join('business as b','b.pkBusiness','=','o.fkBusiness')
+                            ->join('users as u','u.pkUser','=','o.fkUser')
+                            ->join('contacts_by_business as c','c.pkContact_by_business','=','o.fkContact_by_business')
+                            ->join('level_interest as l','l.pkLevel_interest','=','o.fkLevel_interest')
+                            ->select('o.pkQuotations'
+                                    ,'o.name'
+                                    ,'o.folio'
+                                    ,'b.name as bussines'
+                                    ,'u.full_name as agent'
+                                    ,'c.name as contact'
+                                    ,'l.text as level'
+                                    ,'l.color'
+                                    ,'o.final_date'
+                                    ,'o.register_day'
+                                    ,'o.register_hour'
+                                    ,'o.quotations_status as quotation_status'
+                                    ,DB::raw('(SELECT description'
+                                         . ' FROM activities as a'
+                                         . ' WHERE a.status = 1'
+                                         . ' AND a.execution_date IS NOT NULL'
+                                         . ' AND a.pkQuotations = o.pkQuotations'
+                                         . ' ORDER BY pkActivities desc limit 1) as lastActivity')
+                                    ,DB::raw('(SELECT description'
+                                         . ' FROM activities as a'
+                                         . ' WHERE a.status = 1'
+                                         . ' AND a.pkQuotations = o.pkQuotations'
+                                         . ' ORDER BY pkActivities desc limit 1) as nextActivity')
+                                    ,DB::raw('(SELECT final_date'
+                                         . ' FROM activities as a'
+                                         . ' WHERE a.status = 1'
+                                         . ' AND a.pkQuotations = o.pkQuotations'
+                                         . ' ORDER BY pkActivities desc limit 1) as finalActivity')
+                                    ,DB::raw("(CASE WHEN o.quotations_status = 1 THEN 'Creada' 
+                                                    WHEN o.quotations_status = 2 THEN 'Abierta'
+                                                    WHEN o.quotations_status = 3 THEN 'Rechazada'
+                                                    WHEN o.quotations_status = 4 THEN 'Cancelada'
+                                                    WHEN o.quotations_status = 5 THEN 'Cerrada'
+                                                    ELSE 'N/A' END) as quotations_status"))
+                            ->where('o.status','=',1)
+                            ->where('b.pkBusiness','=',$Bussiness->pkBusiness)
+                            ->get();
+             
+             $oportunity = DB::table('opportunities as o')
+                            ->join('business as b','b.pkBusiness','=','o.fkBusiness')
+                            ->join('users as u','u.pkUser','=','o.fkUser')
+                            ->join('contacts_by_business as c','c.pkContact_by_business','=','o.fkContact_by_business')
+                            ->join('level_interest as l','l.pkLevel_interest','=','o.fkLevel_interest')
+                            ->join('courses as cu','cu.pkCourses','=','o.number_courses')
+                            ->join('payment_methods as p','p.pkPayment_methods','=','o.fkPayment_methods')
+                            ->select('o.pkOpportunities'
+                                    ,'o.name'
+                                    ,'o.folio'
+                                    ,'o.register_day'
+                                    ,'o.register_hour'
+                                    ,'b.name as bussines'
+                                    ,'u.full_name as agent'
+                                    ,'c.name as contact'
+                                    ,'l.text as level'
+                                    ,'l.color'
+                                    ,'o.opportunities_status as opportunities_statu'
+                                    ,DB::raw('(SELECT description'
+                                         . ' FROM activities as a'
+                                         . ' WHERE a.status = 1'
+                                         . ' AND a.execution_date IS NOT NULL'
+                                         . ' AND a.pkOpportunities = o.pkOpportunities'
+                                         . ' ORDER BY pkActivities desc limit 1) as lastActivity')
+                                    ,DB::raw('(SELECT description'
+                                         . ' FROM activities as a'
+                                         . ' WHERE a.status = 1'
+                                         . ' AND a.pkOpportunities = o.pkOpportunities'
+                                         . ' ORDER BY pkActivities desc limit 1) as nextActivity')
+                                    ,DB::raw('(SELECT final_date'
+                                         . ' FROM activities as a'
+                                         . ' WHERE a.status = 1'
+                                         . ' AND a.pkOpportunities = o.pkOpportunities'
+                                         . ' ORDER BY pkActivities desc limit 1) as finalActivity')
+                                    ,DB::raw("(CASE WHEN o.opportunities_status = 1 THEN 'Creada' 
+                                                    WHEN o.opportunities_status = 2 THEN 'Abierta'
+                                                    WHEN o.opportunities_status = 3 THEN 'Rechazada'
+                                                    WHEN o.opportunities_status = 4 THEN 'Cancelada'
+                                                    WHEN o.opportunities_status = 5 THEN 'Cotizada'
+                                                    ELSE 'N/A' END) as opportunities_status")
+                                    ,'o.number_employees'
+                                    ,'cu.name as course'
+                                    ,'o.number_places'
+                                    ,'o.price_total'
+                                    ,'o.necesites'
+                                    ,'o.comment'
+                                    ,'p.name as typePayment'
+                                    ,'o.isBudget')
+                            ->where('o.status','=',1)
+                            ->where('b.pkBusiness','=',$Bussiness->pkBusiness)
+                            ->get();
+             
+             //info para crear una cotizacion
+             $bussines  = DB::table('business')
+                           ->select('name'
+                                   ,'pkBusiness')
+                           ->where('status','=',1)
+                           ->get();
+           
+           $agent     = DB::table('users')
+                           ->select('full_name'
+                                   ,'pkUser')
+                           ->where('status','=',1)
+                           ->where('fkUser_type','!=',1)
+                           ->where('privileges','like','%paticipate_oportunity:1%')
+                           ->get();
+            
+            $level      = DB::table('level_interest')
+                             ->select('pkLevel_interest'
+                                     ,'text')
+                             ->where('status','=',1)
+                             ->get();
+            
+            
+            $courses   = DB::table('courses')
+                           ->select('pkCourses'
+                                   ,'name')
+                           ->where('status','=',1)
+                           ->get();
+            
+            
+            $payment    = DB::table('payment_methods')
+                             ->select('pkPayment_methods'
+                                     ,'name')
+                             ->where('status','=',1)
+                             ->get();
+            
+             $businessQuery      = DB::table("business")
+                                    ->where('status','=',1)
+                                    ->orderBy("name","asc")
+                                    ->get();
+            
+            $usersQuery      = DB::table("users")
+                                    ->join('user_type','user_type.pkUser_type','=','users.fkUser_type')
+                                    ->where('users.status','=',1)
+                                    ->where('user_type.status','=',1)
+                                    ->orderBy("users.full_name","asc")
+                                    ->select(
+                                    'users.pkUser as pkUser',
+                                    'users.full_name as full_name',
+                                    'user_type.name as type_name'
+                                    )
+                                    ->get();
+            
+            $activitiesTypeQuery      = DB::table("activities_type")
+                                    ->where('status','=',1)
+                                    ->orderBy("text","asc")
+                                    ->get();
+            
+             $option             = '<option value="-1">Selecciona el tipo de negocio</option><option value="0_N">Prospecto</option>';
+            
+            $opportunitiesQuery = DB::table("opportunities")
+                                    ->where('fkBusiness','=',$Bussiness->pkBusiness)
+                                    ->where('opportunities_status','!=',2)
+                                    ->where('status','=',1)
+                                    ->orderBy("name","asc")
+                                    ->get();
+            
+            $quotationsQuery    = DB::table("quotations")
+                                    ->where('fkBusiness','=',$Bussiness->pkBusiness)
+                                    ->where('status','=',1)
+                                    ->orderBy("name","asc")
+                                    ->get();
+            
+            foreach ($opportunitiesQuery as $opportunitiesInfo) {
+                $option .= '<option value="'.$opportunitiesInfo->pkOpportunities.'_o">'.html_entity_decode($opportunitiesInfo->name).'(Oportunidad)</option>';
+            }
+            
+            foreach ($quotationsQuery as $quotationsInfo) {
+                $option .= '<option value="'.$quotationsInfo->pkQuotations.'_c">'.html_entity_decode($quotationsInfo->name).'(Cotizaci&oacute;n)</option>';
+            }
+            
+            $arrayLineTime = [];
+            $cont = 0;
+            
+             $lineTimeOportunity  = DB::table('opportunities as o')
+                                       ->join('users as u','u.pkUser','=','o.fkUser')
+                                       ->select('o.folio'
+                                               ,'u.full_name'
+                                               ,'o.register_day'
+                                               ,'o.register_hour'
+                                               ,'o.color'
+                                               ,'o.icon')
+                                       ->where('o.fkBusiness','=',$Bussiness->pkBusiness)
+                                       ->orderby('register_date','asc')
+                                       ->orderby('register_hour','asc')
+                                       ->get();
+             
+              $lineTimeQuotation = DB::table('quotations as q')
+                                    ->join('users as u','u.pkUser','=','q.fkUser')
+                                    ->select('q.folio'
+                                             ,'q.register_day'
+                                             ,'u.full_name'
+                                             ,'q.color'
+                                             ,'q.icon'
+                                             ,'q.register_hour')
+                                    ->where('q.fkBusiness','=',$Bussiness->pkBusiness)
+                                    ->orderby('register_date','asc')
+                                    ->orderby('register_hour','asc')
+                                    ->get();
+              
+                     
+            
+              $lineTimeActivitys = DB::table('activities as a')
+                                    ->join('activities_type as t','t.pkActivities_type','=','a.fkActivities_type')
+                                    ->join('users as u','u.pkUser','=','a.fkUser')
+                                    ->select('a.description'
+                                             ,'a.register_date'
+                                             ,'u.full_name'
+                                             ,'t.color'
+                                             ,'t.icon'
+                                             ,'a.register_hour')
+                                    ->where('a.fkBusiness','=',$Bussiness->pkBusiness)
+                                    ->orderby('register_date','asc')
+                                    ->orderby('register_hour','asc')
+                                    ->get();
+              
+                foreach($lineTimeQuotation as $itemQuotation){
+
+                  $arrayLineTime[$cont] = array('desc'         => "Cotizacion folio: ".$itemQuotation->folio." creada",
+                                               'full_name'     => $itemQuotation->full_name,
+                                               'register_day'  => $itemQuotation->register_day,
+                                               'register_hour' => $itemQuotation->register_hour,
+                                               'color'         => $itemQuotation->color,
+                                               'icon'          => $itemQuotation->icon,
+                                               'type'          => "quotation");
+                          
+                   $cont++;
+              }
+              
+              foreach($lineTimeOportunity as $itemOportunity){
+
+                  $arrayLineTime[$cont] = array('desc'         => "Oportunidad folio: ".$itemOportunity->folio." creada",
+                                               'full_name'     => $itemOportunity->full_name,
+                                               'register_day'  => $itemOportunity->register_day,
+                                               'register_hour' => $itemOportunity->register_hour,
+                                               'color'         => $itemOportunity->color,
+                                               'icon'          => $itemOportunity->icon,
+                                               'type'          => "oportunidad");
+                          
+                   $cont++;
+              }
+              
+              foreach($lineTimeActivitys as $itemActivity){
+
+                  $arrayLineTime[$cont] = array('desc'         => $itemActivity->description,
+                                               'full_name'     => $itemActivity->full_name,
+                                               'register_day'  => $itemActivity->register_date,
+                                               'register_hour' => $itemActivity->register_hour,
+                                               'color'         => $itemActivity->color,
+                                               'icon'          => $itemActivity->icon,
+                                               'type'          => "actividad");
+                          
+                  $cont++;
+              }
+
+              usort($arrayLineTime,array($this, "sortFunction"));
+              
+             // dd($arrayLineTime);
+              
+              $filterTypeActivity = DB::table('activities_type')
+                                      ->where('status','=',1)
+                                      ->get();
+              
+               $arrayFilter = [];
+               $cont = 0;
+               
+                foreach($filterTypeActivity as $itemActi){
+                   $arrayFilter[$cont] = array('desc'         => $itemActi->text."",
+                                               'id'           => "",
+                                               'type'         => "actividad");
+                   $cont++;
+              }
+               
+                foreach($lineTimeQuotation as $itemQuotation){
+                  $arrayFilter[$cont] = array('desc'         => "Cotizacion folio: ".$itemQuotation->folio."",
+                                              'id'           => "",
+                                              'type'         => "quotation");                          
+                   $cont++;
+              }
+              
+              foreach($lineTimeOportunity as $itemOportunity){
+
+                   $arrayFilter[$cont] = array('desc'         => "Oportunidad folio: ".$itemOportunity->folio."",
+                                               'id'           => "",
+                                               'type'          => "oportunidad");
+                          
+                   $cont++;
+              }
+              
+          
+              
+            return view('empresas.detEmpresa')->with("Bussiness",$Bussiness)
+                                              ->with("contact",$contact)
+                                              ->with("quotation",$quotation)
+                                              ->with("oportunity",$oportunity)
+                                              ->with("bussines",$bussines)
+                                              ->with("agent",$agent)
+                                              ->with("level",$level)
+                                              ->with("courses",$courses)
+                                              ->with("payment",$payment)
+                                              ->with("usersQuery",$usersQuery)
+                                              ->with("businessQuery",$businessQuery)
+                                              ->with("option",$option)
+                                              ->with("arrayLineTime",$arrayLineTime)
+                                              ->with("arrayFilter",$arrayFilter)
+                                              ->with("activitiesTypeQuery",$activitiesTypeQuery);
+       }
+       
+       public function saveMasiveBussinesDB(Request $request){
+           
+            $fileBusiness       = $request->file('fileBusiness');
+            $date               = date("Y-m-d");
+            $flag               = "true";
+            $message            = "true";
+            $infoFileArray      = array();
+            $user               = Session::get('pkUser');
+            
+            DB::beginTransaction();
+              
+            try { 
+                if($fileBusiness != ''){ 
+                    if(file_exists ($fileBusiness)){
+                        $nameFile = $fileBusiness->getClientOriginalName();
+                        if($nameFile!=''){
+                            $ext            = $fileBusiness->extension();
+                            if(($ext == 'txt') || ($ext == 'csv')){
+                   
+                                    $pathFile       = $fileBusiness->getRealPath();
+                                    $fp             = fopen($pathFile, "r");
+                                    $flagAux        = 0;
+                                    while (($row = fgetcsv($fp)) !== false) {
+                                        
+                                        if($flagAux!=0){
+                                              if(!empty($row[0])){
+
+                                                                  $insertBusiness = new Business;
+                                                                  $insertBusiness->rfc = $row[1];
+                                                                  $insertBusiness->name = $row[0];
+                                                                  $insertBusiness->mail = '';
+                                                                  $insertBusiness->address = $row[2];
+                                                                  $insertBusiness->number = 1;
+                                                                  $insertBusiness->postal_code = 1;
+                                                                  $insertBusiness->country = $row[3];
+                                                                  $insertBusiness->city = $row[4];
+                                                                  $insertBusiness->state = $row[5];
+                                                                  $insertBusiness->web = $row[6];
+                                                                  $insertBusiness->phone = '';
+                                                                  $insertBusiness->mobile_phone = '';
+                                                                  $insertBusiness->fkComercial_business = $row[10];
+                                                                  $insertBusiness->fkCategory = $row[7];
+                                                                  $insertBusiness->fkUser = $user;
+                                                                  $insertBusiness->fKOrigin = $row[8];
+                                                                  $insertBusiness->image = $row[9];
+                                                                  $insertBusiness->fkBusiness_type = $row[11];
+                                                                  $insertBusiness->fkBusiness_status = 1;
+                                                                  $insertBusiness->is_active = 1;
+                                                                  $insertBusiness->date_register = $date;
+                                                                  $insertBusiness->stateType = 1;
+                                                                  $insertBusiness->status = 1;
+                                                                  if($insertBusiness->save()){
+                                                                      $name    = ($row[12] == "") ? "N/A" : $row[12];
+                                                                      $puesto  = ($row[13] == "") ? "N/A" : $row[13];
+                                                                      $phone   = ($row[15] == "") ? "N/A" : $row[15];
+                                                                      $movile  = ($row[17] == "") ? "N/A" : $row[17];
+                                                                      
+                                                                      if(empty($row[14])){
+                                                                         $flag = "false";
+                                                                      $message = "Error al ingresar usuario,el correo obligatorio \n";     
+                                                                      }
+                                                                      else{
+                                                                       $insertContacts                = new Contacts_by_business;
+                                                                       $insertContacts->fkBusiness    = $insertBusiness->pkBusiness;
+                                                                       $insertContacts->name          = $name;
+                                                                       $insertContacts->mail          = $row[14];
+                                                                       $insertContacts->area          = $puesto;
+                                                                       $insertContacts->phone         = $phone;
+                                                                       $insertContacts->mobile_phone  = $movile;
+                                                                       $insertContacts->status        = 1;
+                                                                          
+                                                                        if($insertContacts->save()){
+                                                                            
+                                                                        }else{
+                                                                           $flag = "false";
+                                                                      $message = "Error al ingresar usuario,el correo obligatorio \n";   
+                                                                      }
+                                                                      
+                                                                        }
+                                                                      
+                                                                  }else{
+                                                                      $flag = "false";
+                                                                      $message = "Error al crear empresas \n"; 
+                                                                  } 
+                                             }
+                                        }
+                                        $flagAux++;
+                                    }
+                                    fclose($fp); 
+                                    unlink($pathFile);
+ 
+                            }else{
+                                $flag           = "false";
+                                $message    = "Error en formato de archivo \n";
+                            }
+                        }else{
+                            $flag           = "false";
+                            $message    = "Error en nombre de archivo \n";
+                        }
+                    }else{
+                        $flag           = "false";
+                        $message    = "Error en la carga del archivo \n";
+                    }
+                }else{
+                    $flag           = "false";
+                    $message    = "Error no existe el archivo \n";
+                }
+                
+                
+                if($flag == "true"){
+                    DB::commit();
+                    return $message;
+                }else{
+                    DB::rollback(); 
+                    return $message;
+                }
+            } catch (\Exception $e) {
+                DB::rollback(); 
+                //return "Error del sistema, favor de contactar al desarrollador";
+                return $e->getMessage();
+           }   
+       }
+	
+}
