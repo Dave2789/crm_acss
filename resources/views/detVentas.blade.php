@@ -78,7 +78,7 @@
                                         <tr>
                                             <td>
                                                 <div data-label="60%" class="css-bar css-bar-10 css-bar-sm css-bar-success">
-                                                    <img src="/assets/images/users/1.jpg" alt="User">
+                                                    <img src="{{ asset('assets/images/users/1.jpg')}}" alt="User">
                                                 </div>
                                             </td>
                                             <td>Juan López</td>
@@ -91,7 +91,7 @@
                                         <tr>
                                             <td>
                                                 <div data-label="10%" class="css-bar css-bar-10 css-bar-sm css-bar-success">
-                                                    <img src="/assets/images/users/2.jpg" alt="User">
+                                                    <img src="{{ asset('assets/images/users/2.jpg')}}" alt="User">
                                                 </div>
                                             </td>
                                             <td>Pedro Ramírez</td>
@@ -129,7 +129,7 @@
             </button>
           </div>
           <div class="modal-body">
-            <h3><img src="/images/usuarios/user.jpg" style="max-height:40px"> Juan López</h3>
+            <h3><img src="{{ asset('assets/images/usuarios/user.jpg')}}" style="max-height:40px"> Juan López</h3>
             <div class="table-responsive">
                 <table class="table table-hover no-wrap" id="detVentasRealizadas">
                     <thead>

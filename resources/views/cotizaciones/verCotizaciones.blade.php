@@ -182,10 +182,10 @@
                                     <td class="text-center">
                                        <div>
                                           @if(!empty($item->image))
-                                          <img style="max-height: 40px;" src="/images/business/{{$item->image}}"
+                                          <img style="max-height: 40px;" src="{{ asset('assets/images/business/' . $item->image)}}"
                                              class="rounded-circle">
                                           @else
-                                          <img style="max-height: 40px;" src="/images/business/em.jpg"
+                                          <img style="max-height: 40px;" src="{{ asset('assets/images/business/em.jpg')}}"
                                              class="rounded-circle">
                                           @endif
                                        </div>
@@ -262,7 +262,7 @@
                                     </td>
                                     <td style="min-width:150px;">
                                        Asignado:
-                                       <div><img style="max-height: 40px;" src="/images/usuarios/user.jpg"
+                                       <div><img style="max-height: 40px;" src="{{ asset('assets/images/usuarios/user.jpg')}}"
                                              class="rounded-circle">{!!$item->agent !!} </div>
                                        <hr style="margin:7px;">
                                        Atendió:<br>

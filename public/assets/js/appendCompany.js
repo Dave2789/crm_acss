@@ -9995,6 +9995,27 @@ var count = $("#count2").val() - 1;
         var pkUser     = $('#pkUser').val();
         var pkGiro     = $('#pkGiro').val();
         var pkCampanin = $('#pkCampanin').val();
+        var customTooltip = function (valor) {
+            var val = parseFloat(valor).toFixed(2);
+            var ventas = val.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
+            return '$ ' + ventas  + ' pesos en ventas';
+          };
+
+        var options = {
+            seriesBarDistance: 10,
+            plugins: [
+                Chartist.plugins.tooltip({
+                    transformTooltipTextFnc: customTooltip
+                })
+            ]
+        };
+          
+        var responsiveOptions = [
+            ['screen and (max-width: 640px)', {
+              seriesBarDistance: 5,
+
+            }]
+        ];
         
         console.log(startDay);
         console.log(pkUser);
@@ -10042,6 +10063,28 @@ var count = $("#count2").val() - 1;
                        
                         $('#infoChange').empty();
                         $('#infoChange').html(response.view);
+                        console.log(response.salesTotal)
+                        var ene = response.salesTotal['01'] ? response.salesTotal['01'] : 0
+                        var feb = response.salesTotal['02'] ? response.salesTotal['02'] : 0
+                        var mar = response.salesTotal['03'] ? response.salesTotal['03'] : 0
+                        var abr = response.salesTotal['04'] ? response.salesTotal['04'] : 0
+                        var may = response.salesTotal['05'] ? response.salesTotal['05'] : 0
+                        var jun = response.salesTotal['06'] ? response.salesTotal['06'] : 0
+                        var jul = response.salesTotal['07'] ? response.salesTotal['07'] : 0
+                        var ago = response.salesTotal['08'] ? response.salesTotal['08'] : 0
+                        var sep = response.salesTotal['09'] ? response.salesTotal['09'] : 0
+                        var oct = response.salesTotal['10'] ? response.salesTotal['10'] : 0
+                        var nov = response.salesTotal['11'] ? response.salesTotal['11'] : 0
+                        var dic = response.salesTotal['12'] ? response.salesTotal['12'] : 0
+
+                        var newData = {
+                            labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+                            series: [
+                              [ene, feb, mar, abr, may, jun, jul, ago, sep, oct, nov, dic],
+                            ]
+                          };
+
+                        new Chartist.Bar('.ct-bar-chart', newData, options, responsiveOptions);
 
                     }else{
                         Swal.fire({

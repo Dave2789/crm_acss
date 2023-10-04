@@ -41,4 +41,4 @@
 </div>
 </div>
 
-    <script src="/js/custom.min.js"></script>
+    <script src="{{ asset('assets/js/custom.min.js')}}"></script>

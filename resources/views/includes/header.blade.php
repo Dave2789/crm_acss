@@ -88,9 +88,9 @@
                 <!-- User Profile -->
                 <li class="nav-item dropdown u-pro">
                     @if(!empty(Session::get('image')))
-                    <a class="nav-link waves-effect waves-dark profile-pic" href="/viewProfileAgent/{{Session::get('pkUser')}}"><img src="/images/usuarios/{{Session::get('image')}}" alt="Usuario" class=""> Mi perfil</a>
+                    <a class="nav-link waves-effect waves-dark profile-pic" href="/viewProfileAgent/{{Session::get('pkUser')}}"><img src="{{ asset('assets/images/usuarios/' . Session::get('image')) }}" alt="Usuario" class=""> Mi perfil</a>
                     @else 
-                    <a class="nav-link waves-effect waves-dark profile-pic" href="/viewProfileAgent/{{Session::get('pkUser')}}"><img src="/images/usuarios/user.jpg" alt="Usuario" class=""> Mi perfil</a>
+                    <a class="nav-link waves-effect waves-dark profile-pic" href="/viewProfileAgent/{{Session::get('pkUser')}}"><img src="{{ asset('assets/images/usuarios/user.jpg')}}" alt="Usuario" class=""> Mi perfil</a>
                     @endif
                 </li>
                 <!-- End User Profile -->

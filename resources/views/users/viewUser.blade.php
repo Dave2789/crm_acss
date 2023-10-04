@@ -64,7 +64,7 @@
                                             @foreach($users as $usersInfo)
                                             <tr>
                                                 <td>
-                                                    <img src="/images/usuarios/{!! $usersInfo->image !!}" class="img-fluid" style="max-width: 60px;">
+                                                    <img src="{{ asset('assets/images/usuarios/' . $usersInfo->image) }}" class="img-fluid" style="max-width: 60px;">
                                                 </td>
                                             <td><a href="/viewProfileAgent/{!!$usersInfo->pkUser!!}">{!! $usersInfo->full_name !!} </a></td>
                                                 <!--td>{!! $usersInfo->username !!} </td-->

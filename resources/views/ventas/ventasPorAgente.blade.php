@@ -74,7 +74,7 @@
                                           <tr>
                                             <td class="text-center">{!!$cont!!}</td>
                                             <td class="txt-oflo">
-                                            <a href="/viewProfileAgent/{!!$item->pkUser!!}"><img class="rounded-circle" style="max-height:40px;" src="/images/usuarios/{!!$item->image!!}">{!!$item->full_name!!}</a></td>
+                                            <a href="/viewProfileAgent/{!!$item->pkUser!!}"><img class="rounded-circle" style="max-height:40px;" src="{{ asset('assets/images/usuarios/' . $item->image) }}">{!!$item->full_name!!}</a></td>
                                             <td>
                                                  @if(!empty($item->salesPlaces))
                                                 <span class="text-success">{!!$item->salesPlaces!!}</span>
@@ -152,7 +152,7 @@
           </div>
           <div class="modal-body">
             <div class="row">
-                <h3><img src="/images/usuarios/user.jpg" class="img-fluid" style="max-height:40px;"> Karla López</h3>
+                <h3><img src="{{ asset('assets/images/usuarios/user.jpg')}}" class="img-fluid" style="max-height:40px;"> Karla López</h3>
                 <div class="table-responsive m-t-40 table-ab">
                     <table id="tableAgentesC" class="table display table-bordered table-striped no-wrap">
                         <thead>
@@ -211,7 +211,7 @@
                 </div>
             </div>
             <div class="row m-t-40">
-                <h3><img src="/images/usuarios/user.jpg" class="img-fluid" style="max-height:40px;"> Juan Pérez</h3>
+                <h3><img src="{{ asset('assets/images/usuarios/user.jpg')}}" class="img-fluid" style="max-height:40px;"> Juan Pérez</h3>
                 <div class="table-responsive m-t-40 table-ab">
                     <table id="tableAgentesT" class="table display table-bordered table-striped no-wrap">
                         <thead>
@@ -339,7 +339,7 @@
           <div class="modal-body">
             <div class="row">
                 <div class="col-1">
-                    <img src="/images/usuarios/user.jpg" class="img-fluid">
+                    <img src="{{ asset('assets/images/usuarios/user.jpg')}}" class="img-fluid">
                 </div>
                 <div class="col-11">
                     <h3>Juan López</h3>

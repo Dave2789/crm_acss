@@ -669,7 +669,7 @@ var responsiveOptions = [
   }]
 ];
 
-new Chartist.Bar('.ct-bar-chart', data, options, responsiveOptions);    
+    var ventas_graf = new Chartist.Bar('.ct-bar-chart', data, options, responsiveOptions);    
     </script>
     
     <script>

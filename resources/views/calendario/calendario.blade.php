@@ -3,7 +3,7 @@
 
 <head>
     @include('includes.head')
-    <link href="/assets/node_modules/calendar/dist/fullcalendar.css" rel="stylesheet" />
+    <link href="{{ asset('assets/node_modules/calendar/dist/fullcalendar.css')}}" rel="stylesheet" />
 </head>
 
 <body class="skin-default fixed-layout">
@@ -93,10 +93,10 @@
     @include('includes.scripts')
     <!-- End scripts  -->
     <!-- Calendar JavaScript -->
-    <script src="/assets/node_modules/calendar/jquery-ui.min.js"></script>
-    <script src="/assets/node_modules/moment/moment.js"></script>
-    <script src='/assets/node_modules/calendar/dist/fullcalendar.min.js'></script>
-    <script src='/assets/node_modules/calendar/dist/locale/es.js'></script>
+    <script src="{{ asset('assets/node_modules/calendar/jquery-ui.min.js')}}"></script>
+    <script src="{{ asset('assets/node_modules/moment/moment.js')}}"></script>
+    <script src='{{ asset('assets/node_modules/calendar/dist/fullcalendar.min.js')}}'></script>
+    <script src='{{ asset('assets/node_modules/calendar/dist/locale/es.js')}}'></script>
     
     <script>
    $(document).ready(function(){     

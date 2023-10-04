@@ -78,7 +78,7 @@
                                         <tr>
                                             <td>
                                                 <div data-label="60%" class="css-bar css-bar-20 css-bar-sm css-bar-danger">
-                                                    <img src="/assets/images/users/1.jpg" alt="User">
+                                                    <img src="{{ asset('assets/images/users/1.jpg')}}" alt="User">
                                                 </div>
                                             </td>
                                             <td>Juan López</td>
@@ -91,7 +91,7 @@
                                         <tr>
                                             <td>
                                                 <div data-label="10%" class="css-bar css-bar-10 css-bar-sm css-bar-danger">
-                                                    <img src="/assets/images/users/2.jpg" alt="User">
+                                                    <img src="{{ asset('assets/images/users/2.jpg')}}" alt="User">
                                                 </div>
                                             </td>
                                             <td>Pedro Ramírez</td>

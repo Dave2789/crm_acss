@@ -1,24 +1,24 @@
 <!-- ============================================================== -->
     <!-- All Jquery -->
     <!-- ============================================================== -->
-    <script src="/assets/node_modules/jquery/jquery-3.2.1.min.js"></script>
+    <script src="{{ asset('assets/node_modules/jquery/jquery-3.2.1.min.js')}}"></script>
     <!-- Bootstrap popper Core JavaScript -->
-    <script src="/assets/node_modules/popper/popper.min.js"></script>
-    <script src="/assets/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="{{ asset('assets/node_modules/popper/popper.min.js')}}"></script>
+    <script src="{{ asset('assets/node_modules/bootstrap/dist/js/bootstrap.min.js')}}"></script>
     <!-- slimscrollbar scrollbar JavaScript -->
-    <script src="/js/perfect-scrollbar.jquery.min.js"></script>
-    <script  src="/js/jquery-confirm.js"></script>
+    <script src="{{ asset('assets/js/perfect-scrollbar.jquery.min.js')}}"></script>
+    <script src="{{ asset('assets/js/jquery-confirm.js')}}"></script>
     <!--Wave Effects -->
-    <script src="/js/waves.js"></script>
+    <script src="{{ asset('assets/js/waves.js')}}"></script>
     <!--Menu sidebar -->
-    <script src="/js/sidebarmenu.js"></script>
-    <script src="/assets/node_modules/sticky-kit-master/dist/sticky-kit.min.js"></script>
-    <script src="/assets/node_modules/sparkline/jquery.sparkline.min.js"></script>
+    <script src="{{ asset('assets/js/sidebarmenu.js')}}"></script>
+    <script src="{{ asset('assets/node_modules/sticky-kit-master/dist/sticky-kit.min.js')}}"></script>
+    <script src="{{ asset('assets/node_modules/sparkline/jquery.sparkline.min.js')}}"></script>
     <!--Custom JavaScript -->
-    <script src="/js/custom.min.js"></script>
+    <script src="{{ asset('asset/js/custom.min.js')}}"></script>
     <!-- ========================== This page plugins  ==================================== -->    
     <!-- Chart JS -->
-    <script src="/js/dashboard1.js"></script>
+    <script src="{{ asset('assets/js/dashboard1.js')}}"></script>
     <!-- <script src="/assets/node_modules/chart.js/chartjs.init.js"></script>
     <script src="/assets/node_modules/chart.js/chart.min.js"></script>-->
     <!-- chartist chart 
@@ -53,10 +53,10 @@
     <script src="/assets/node_modules/datatables.net/js/buttons.html5.min.js" ></script>
     <script src="/assets/node_modules/datatables.net/js/buttons.print.min.js" ></script>
     <!-- EASY PIE CHART JS -->
-    <script src="/assets/node_modules/jquery.easy-pie-chart/dist/jquery.easypiechart.min.js"></script>
-    <script src="/assets/node_modules/jquery.easy-pie-chart/easy-pie-chart.init.js"></script>
-    <script src="/assets/node_modules/sweetalert2/dist/sweetalert2.all.min.js"></script>
-    <script src="/assets/node_modules/sweetalert2/sweet-alert.init.js"></script>
+    <script src="{{ asset('assets/node_modules/jquery.easy-pie-chart/dist/jquery.easypiechart.min.js')}}"></script>
+    <script src="{{ asset('assets/node_modules/jquery.easy-pie-chart/easy-pie-chart.init.js')}}"></script>
+    <script src="{{ asset('assets/node_modules/sweetalert2/dist/sweetalert2.all.min.js')}}"></script>
+    <script src="{{ asset('assets/node_modules/sweetalert2/sweet-alert.init.js')}}"></script>
     <script type="text/javascript">
         $('#myModal').on('shown.bs.modal', function () {
           $('#myInput').trigger('focus');
@@ -65,9 +65,9 @@
   <!--  <script src="/assets/node_modules/html5-editor/wysihtml5-0.3.0.js"></script>
     <script src="/assets/node_modules/html5-editor/bootstrap-wysihtml5.js"></script>
     <script src="/assets/node_modules/dropzone-master/dist/dropzone.js"></script>-->
-      <script src="/js/loadingoverlay.js"></script>
-    <script src="/js/append.js"></script>
-    <script src="/js/appendCompany.js"></script>
+      <script src="{{ asset('assets/js/loadingoverlay.js')}}"></script>
+    <script src="{{ asset('assets/js/append.js')}}"></script>
+    <script src="{{ asset('assets/js/appendCompany.js')}}"></script>
 <!--<script type="text/javascript">
         $(function () {
             $('[data-toggle="tooltip"]').tooltip()

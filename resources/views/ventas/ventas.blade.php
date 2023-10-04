@@ -54,70 +54,70 @@
                                         <tr>
                                             <td class="text-center">1</td>
                                             <td class="txt-oflo">
-                                                <a href="/detAgente"><img class="rounded-circle" style="max-height:40px;" src="/images/usuarios/user.jpg"> Juan López</a></td>
+                                                <a href="/detAgente"><img class="rounded-circle" style="max-height:40px;" src="{{ asset('assets/images/usuarios/user.jpg')}}"> Juan López</a></td>
                                             <td><span class="text-success">10,500</span></td>
                                             <td><span class="badge badge-success badge-pill">$24,520</span> </td>
                                             <td class="txt-oflo"><a href="/detAgente"><span class="ti-user"></span></a></td>
                                         </tr>
                                         <tr>
                                             <td class="text-center">2</td>
-                                            <td class="txt-oflo"><a href="/detAgente"><img class="rounded-circle" style="max-height:40px;" src="/images/usuarios/user.jpg"> Karla Ramírez</a></td>
+                                            <td class="txt-oflo"><a href="/detAgente"><img class="rounded-circle" style="max-height:40px;" src="{{ asset('assets/images/usuarios/user.jpg')}}"> Karla Ramírez</a></td>
                                             <td><span class="text-success">9,500</span></td>
                                             <td><span class="badge badge-success badge-pill">$18,520</span> </td>
                                             <td class="txt-oflo"><a href="/detAgente"><span class="ti-user"></span></a></td>
                                         </tr>
                                         <tr>
                                             <td class="text-center">3</td>
-                                            <td class="txt-oflo"><a href="/detAgente"><img class="rounded-circle" style="max-height:40px;" src="/images/usuarios/user.jpg"> Pedro Perez</a></td>
+                                            <td class="txt-oflo"><a href="/detAgente"><img class="rounded-circle" style="max-height:40px;" src="{{ asset('assets/images/usuarios/user.jpg')}}"> Pedro Perez</a></td>
                                             <td><span class="text-success">,500</span></td>
                                             <td><span class="badge badge-success badge-pill">$16,520</span> </td>
                                             <td class="txt-oflo"><a href="/detAgente"><span class="ti-user"></span></a></td>
                                         </tr>
                                         <tr>
                                             <td class="text-center">4</td>
-                                            <td class="txt-oflo"><a href="/detAgente"><img class="rounded-circle" style="max-height:40px;" src="/images/usuarios/user.jpg"> Agente 4</a></td>
+                                            <td class="txt-oflo"><a href="/detAgente"><img class="rounded-circle" style="max-height:40px;" src="{{ asset('assets/images/usuarios/user.jpg')}}"> Agente 4</a></td>
                                             <td><span class="text-success">7,500</span></td>
                                             <td><span class="badge badge-success badge-pill">$14,520</span> </td>
                                             <td class="txt-oflo"><a href="/detAgente"><span class="ti-user"></span></a></td>
                                         </tr>
                                         <tr>
                                             <td class="text-center">5</td>
-                                            <td class="txt-oflo"><a href="/detAgente"><img class="rounded-circle" style="max-height:40px;" src="/images/usuarios/user.jpg"> Agente 5</a></td>
+                                            <td class="txt-oflo"><a href="/detAgente"><img class="rounded-circle" style="max-height:40px;" src="{{ asset('assets/images/usuarios/user.jpg')}}"> Agente 5</a></td>
                                             <td><span class="text-success">6,500</span></td>
                                             <td><span class="badge badge-success badge-pill">$12,520</span> </td>
                                             <td class="txt-oflo"><a href="/detAgente"><span class="ti-user"></span></a></td>
                                         </tr>
                                         <tr>
                                             <td class="text-center">6</td>
-                                            <td class="txt-oflo"><a href="/detAgente"><img class="rounded-circle" style="max-height:40px;" src="/images/usuarios/user.jpg"> Agente 6</a></td>
+                                            <td class="txt-oflo"><a href="/detAgente"><img class="rounded-circle" style="max-height:40px;" src="{{ asset('assets/images/usuarios/user.jpg')}}"> Agente 6</a></td>
                                             <td><span class="text-success">5,500</span></td>
                                             <td><span class="badge badge-success badge-pill">$11,520</span> </td>
                                             <td class="txt-oflo"><a href="/detAgente"><span class="ti-user"></span></a></td>
                                         </tr>
                                         <tr>
                                             <td class="text-center">7</td>
-                                            <td class="txt-oflo"><a href="/detAgente"><img class="rounded-circle" style="max-height:40px;" src="/images/usuarios/user.jpg"> Agente 7</a></td>
+                                            <td class="txt-oflo"><a href="/detAgente"><img class="rounded-circle" style="max-height:40px;" src="{{ asset('assets/images/usuarios/user.jpg')}}"> Agente 7</a></td>
                                             <td><span class="text-success">4,500</span></td>
                                             <td><span class="badge badge-success badge-pill">$9,520</span> </td>
                                             <td class="txt-oflo"><a href="/detAgente"><span class="ti-user"></span></a></td>
                                         </tr>
                                         <tr>
                                             <td class="text-center">8</td>
-                                            <td class="txt-oflo"><a href="/detAgente"><img class="rounded-circle" style="max-height:40px;" src="/images/usuarios/user.jpg"> Agente 8</a></td>
+                                            <td class="txt-oflo"><a href="/detAgente"><img class="rounded-circle" style="max-height:40px;" src="{{ asset('assets/images/usuarios/user.jpg')}}"> Agente 8</a></td>
                                             <td><span class="text-success">3,500</span></td>
                                             <td><span class="badge badge-success badge-pill">$7,520</span> </td>
                                             <td class="txt-oflo"><a href="/detAgente"><span class="ti-user"></span></a></td>
                                         </tr>
                                         <tr>
                                             <td class="text-center">9</td>
-                                            <td class="txt-oflo"><a href="/detAgente"><img class="rounded-circle" style="max-height:40px;" src="/images/usuarios/user.jpg"> Agente 9</a></td>
+                                            <td class="txt-oflo"><a href="/detAgente"><img class="rounded-circle" style="max-height:40px;" src="{{ asset('assets/images/usuarios/user.jpg')}}"> Agente 9</a></td>
                                             <td><span class="text-success">2,500</span></td>
                                             <td><span class="badge badge-success badge-pill">$4,520</span> </td>
                                             <td class="txt-oflo"><a href="/detAgente"><span class="ti-user"></span></a></td>
                                         </tr>
                                         <tr>
                                             <td class="text-center">10</td>
-                                            <td class="txt-oflo"><a href="/detAgente"><img class="rounded-circle" style="max-height:40px;" src="/images/usuarios/user.jpg"> Agente 10</a></td>
+                                            <td class="txt-oflo"><a href="/detAgente"><img class="rounded-circle" style="max-height:40px;" src="{{ asset('assets/images/usuarios/user.jpg')}}"> Agente 10</a></td>
                                             <td><span class="text-success">1,500</span></td>
                                             <td><span class="badge badge-success badge-pill">$2,520</span> </td>
                                             <td class="txt-oflo"><a href="/detAgente"><span class="ti-user"></span></a></td>
@@ -213,7 +213,7 @@
           </div>
           <div class="modal-body">
             <div class="row">
-                <h3><img src="/images/usuarios/user.jpg" class="img-fluid" style="max-height:40px;"> Karla López</h3>
+                <h3><img src="{{ asset('assets/images/usuarios/user.jpg')}}" class="img-fluid" style="max-height:40px;"> Karla López</h3>
                 <div class="table-responsive m-t-40 table-ab">
                     <table id="tableAgentesC" class="table display table-bordered table-striped no-wrap">
                         <thead>
@@ -272,7 +272,7 @@
                 </div>
             </div>
             <div class="row m-t-40">
-                <h3><img src="/images/usuarios/user.jpg" class="img-fluid" style="max-height:40px;"> Juan Pérez</h3>
+                <h3><img src="{{ asset('assets/images/usuarios/user.jpg')}}" class="img-fluid" style="max-height:40px;"> Juan Pérez</h3>
                 <div class="table-responsive m-t-40 table-ab">
                     <table id="tableAgentesC" class="table display table-bordered table-striped no-wrap">
                         <thead>

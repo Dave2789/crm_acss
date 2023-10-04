@@ -133,10 +133,10 @@
                                                 <td>{!!$item->folio !!}</td>
                                                 <td class="text-center">
                                                         @if(!empty($item->image))
-                                                        <img style="max-height: 40px;" src="/images/business/{!!$item->image!!}" class="rounded-circle">
+                                                        <img style="max-height: 40px;" src="{{ asset('assets/images/business/' . $item->image)}}" class="rounded-circle">
                                                         class="rounded-circle">
                                                         @else
-                                                        <img style="max-height: 40px;" src="/images/business/em.jpg" class="rounded-circle">
+                                                        <img style="max-height: 40px;" src="{{ asset('assets/images/business/em.jpg')}}" class="rounded-circle">
                                                         @endif
                                                    
                                                     <div>

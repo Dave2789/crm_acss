@@ -62,7 +62,7 @@
                                     <tbody>
                                         <tr>
                                             <td>
-                                                <img style="max-height: 30px;" src="/images/usuarios/user.jpg" class="rounded-circle"> AppendCloud
+                                                <img style="max-height: 30px;" src="{{ asset('assets/images/usuarios/user.jpg')}}" class="rounded-circle"> AppendCloud
                                             </td>
                                             <td>
                                                 <div>Alan Arellano<br>
@@ -82,7 +82,7 @@
                                         </tr>
                                         <tr>
                                             <td>
-                                                <img style="max-height: 30px;" src="/images/usuarios/user.jpg" class="rounded-circle"> Empresa 2
+                                                <img style="max-height: 30px;" src="{{ asset('assets/images/usuarios/user.jpg')}}" class="rounded-circle"> Empresa 2
                                             </td>
                                             <td>
                                                 <div>Beatriz Valdez<br>

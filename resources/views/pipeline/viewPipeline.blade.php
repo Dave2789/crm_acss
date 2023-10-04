@@ -61,9 +61,9 @@
                                         <h4 class="card-title">
                                             <span class="pipe-img">
                                                     @if(!empty($itemInitial->image))
-                                                    <img class="img-fluid" src="/images/business/{!!$itemInitial->image!!}" class="rounded-circle">
+                                                    <img class="img-fluid" src="{{ asset('assets/images/business/{!!$itemInitial->image!!}')}}" class="rounded-circle">
                                                     @else
-                                                    <img style="max-height: 40px;" src="/images/business/em.jpg"
+                                                    <img style="max-height: 40px;" src="{{ asset('assets/images/business/em.jpg')}}"
                                                     class="rounded-circle">
                                                     @endif
 
@@ -112,9 +112,9 @@
                                             <h4 class="card-title">
                                                 <span class="pipe-img">
                                                         @if(!empty($Oportunity['logo']))
-                                                        <img class="img-fluid" src="/images/business/{!!$Oportunity['logo']!!}" class="rounded-circle">
+                                                        <img class="img-fluid" src="{{ asset('assets/images/business/'  . $Oportunity["logo"] ) }}" class="rounded-circle">
                                                         @else
-                                                        <img style="max-height: 40px;" src="/images/business/em.jpg"
+                                                        <img style="max-height: 40px;" src="{{ asset('assets/images/business/em.jpg')}}"
                                                         class="rounded-circle">
                                                         @endif
 
@@ -172,9 +172,9 @@
                                         <h4 class="card-title">
                                             <span class="pipe-img">
                                                     @if(!empty($Quotation['logo']))
-                                                    <img class="img-fluid" src="/images/business/{!!$Quotation['logo']!!}" class="rounded-circle">
+                                                    <img class="img-fluid" src="{{ asset('assets/images/business/' . $Quotation["logo"])}}" class="rounded-circle">
                                                     @else
-                                                    <img style="max-height: 40px;" src="/images/business/em.jpg"
+                                                    <img style="max-height: 40px;" src="{{ asset('assets/images/business/em.jpg')}}"
                                                     class="rounded-circle">
                                                     @endif
 
@@ -273,9 +273,9 @@
                                         <h4 class="card-title">
                                             <span class="pipe-img">
                                                     @if(!empty($Sale['logo']))
-                                                    <img class="img-fluid" src="/images/business/{!!$Sale['logo']!!}" class="rounded-circle">
+                                                    <img class="img-fluid" src="{{ asset('assets/images/business/' . $Sale["logo"])}}" class="rounded-circle">
                                                     @else
-                                                    <img style="max-height: 40px;" src="/images/business/em.jpg"
+                                                    <img style="max-height: 40px;" src="{{ asset('assets/images/business/em.jpg')}}"
                                                     class="rounded-circle">
                                                     @endif
 
@@ -486,6 +486,7 @@
    </div>
 </div>
         <!-- End scripts  -->
+        @include('includes.scripts')
     </body>
 
 
