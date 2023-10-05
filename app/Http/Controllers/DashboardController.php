@@ -21,7 +21,7 @@ class DashboardController extends Controller {
         }
         
         public function dashboardFilter(Request $request){
-             /* INFORMACION QUE DEPENDE DEL CONECTOR DE ABRVIUS CAPACITACION
+        /* INFORMACION QUE DEPENDE DEL CONECTOR DE ABRVIUS CAPACITACION
          * ventas realizadas (total de cotizaciones cerradas mas ventas directas de la web)
          * historico de ventas por mes (total de cotizaciones cerradas mas ventas directas de la web)
          * cursos mas vendidos (registro de cursos comprados en la web)
@@ -101,7 +101,7 @@ class DashboardController extends Controller {
                             . "pkQuotations, quotations_status, fkBusiness, fkLevel_interest,fkPayment_methods, fkComercial_business, withIva  "
                             . "from quotations "
                             . "INNER JOIN business ON business.pkBusiness = quotations.fkBusiness "
-                            . "where quotations.status = 1 and business.status = 1 and `quotations_status` != 3  " . $whereFilters . "  and ((final_date >= '" . $startDate . "' and final_date <= '" . $endDate . "') or (register_day >= '" . $startDate . "' and register_day <= '" . $endDate . "'))");
+                            . "where quotations.status = 1 and business.status = 1 " . $whereFilters . "  and ((final_date >= '" . $startDate . "' and final_date <= '" . $endDate . "') or (register_day >= '" . $startDate . "' and register_day <= '" . $endDate . "'))");
 
 
             $opportunitiesQuery = DB::select("select o.`pkOpportunities`, o.`opportunities_status`, o.`fkBusiness`, o.`fkLevel_interest`, o.`fkPayment_methods`,o.`price_total`,o.`iva` "
@@ -109,14 +109,15 @@ class DashboardController extends Controller {
                             . "where b.`status` = 1 and o.`status` = 1 and `opportunities_status` != 3 " . $whereFiltersOppotunities . " and o.`status` = 1 and ((o.`final_date` >= '" . $startDate . "' and o.`final_date` <= '" . $endDate . "') or (o.`register_day` >= '" . $startDate . "' and o.`register_day` <= '" . $endDate . "'))");
 
             $quotationsYearQuery    = DB::select("select "
-                            . "`pkQuotations`, `quotations_status`, `fkBusiness`, `fkLevel_interest`, `fkPayment_methods`, `final_date`, `register_day` , `withIva`"
+                            . "`pkQuotations`, `quotations_status`, `fkBusiness`, `fkLevel_interest`, `fkPayment_methods`, `fkComercial_business`, `final_date`, `register_day` , `withIva`"
                             . "from "
                             . "`quotations` "
+                            . "INNER JOIN business ON business.pkBusiness = quotations.fkBusiness "
                             . "where "
-                            . "`status` = 1 and ((`final_date` >= '".$startDate."' and `final_date` <= '".$endDate."') or (`register_day` >= '".$startDate."' and `register_day` <= '".$endDate."'))");
+                            . "quotations.status = 1 " . $whereFilters . " and ((`final_date` >= '".$startDate."' and `final_date` <= '".$endDate."') or (`register_day` >= '".$startDate."' and `register_day` <= '".$endDate."'))");
 
 
-            
+            $quotationsByMounth = array();
             foreach ($quotationsYearQuery as $quotationsYearInfo) {
                 $currentDate = "";
                                 
@@ -266,7 +267,7 @@ class DashboardController extends Controller {
                     $typeBusiness["lead"][$quotationsInfo->fkBusiness] = $quotationsInfo->fkBusiness;
                 }
                 
-                if(($quotationsInfo->quotations_status == 1) || ($quotationsInfo->quotations_status == 2)){
+                if(($quotationsInfo->quotations_status == 1) || ($quotationsInfo->quotations_status == 2) || ($quotationsInfo->quotations_status == 3)){
                     $quotationsDetailQuery = DB::table('quotations_detail')
                         ->select('price', 'number_places', 'iva'
                                 , 'date')
@@ -290,6 +291,7 @@ class DashboardController extends Controller {
                 }
 
                 switch ($quotationsInfo->quotations_status) {
+                    case '3':
                     case "2":
                         if (isset($quotationsRejected["total"])) {
                             $quotationsRejected["total"] ++;
@@ -427,7 +429,7 @@ class DashboardController extends Controller {
                         break;
                 }
             }
-
+            //dd($quotationsRejected);
             if (isset($quotationsOpen["total"])) {
                 $quotationsOpen["percent"] = ($quotationsOpen["total"] / $contQuotationsTotal) * 100;
             } else {
@@ -626,6 +628,94 @@ class DashboardController extends Controller {
             $sales["mount"] = $salesMount;    
             }
 
+            $arrayMonths = array(   '01' => 'Enero',
+                                    '02' => 'Febrero',
+                                    '03' => 'Marzo',
+                                    '04' => 'Abril',
+                                    '05' => 'Mayo',
+                                    '06' => 'Junio',
+                                    '07' => 'Julio',
+                                    '08' => 'Agosto',
+                                    '09' => 'Septiembre',
+                                    '10' => 'Octubre',
+                                    '11' => 'Noviembre',
+                                    '12' => 'Diciembre');
+            
+            foreach ($arrayMonths as $key => $month) {
+
+                if(!isset($quotationsByMounth["closed"][$key])){
+                    $quotationsByMounth["closed"][$key] = 0;
+                }
+                
+                if(!isset($quotationsByMounth["open"][$key])){
+                    $quotationsByMounth["open"][$key] = 0;
+                }
+                
+                if(!isset($quotationsByMounth["rejected"][$key])){
+                    $quotationsByMounth["rejected"][$key] = 0;
+                }
+                
+                //$monthValues[] = "y: '".$month."', a: ".$quotationsByMounth["closed"][$key].", b: ".$quotationsByMounth["open"][$key].", c: ".$quotationsByMounth["rejected"][$key]."";
+                $monthValues[] = array(
+                    'y' => $month,
+                    'a' => $quotationsByMounth["closed"][$key],
+                    'b' => $quotationsByMounth["open"][$key],
+                    'c' => $quotationsByMounth["rejected"][$key],
+                );
+                
+                if(!isset($opportunitiesByMounth["closed"][$key])){
+                    $opportunitiesByMounth["closed"][$key] = 0;
+                }
+                
+                if(!isset($opportunitiesByMounth["open"][$key])){
+                    $opportunitiesByMounth["open"][$key] = 0;
+                }
+                
+                if(!isset($opportunitiesByMounth["rejected"][$key])){
+                    $opportunitiesByMounth["rejected"][$key] = 0;
+                }
+                
+                $monthValuesOport[] = "y: '".$month."', a: ".$opportunitiesByMounth["closed"][$key].", b: ".$opportunitiesByMounth["open"][$key].", c: ".$opportunitiesByMounth["rejected"][$key]."";
+                
+                
+                if(!isset($salesTotalArray[$key])){
+                    $salesTotalArray[$key] = 0;
+                }
+                
+                
+                if(!isset($salesTotalRejectArray[$key])){
+                    $salesTotalRejectArray[$key] = 0;
+                }
+                
+                $initialMonth = date("Y")."-".$key."-01";
+                $finishMonth  = date("Y")."-".$key."-31";
+
+                $salesMount = DB::table('sales')
+                        ->select('mont')
+                        ->where('status','=',1)
+                        ->whereDate('day','>=',$initialMonth)
+                        ->whereDate('day','<=',$finishMonth)
+                        ->sum('mont');
+                
+                $numCourse = DB::table('sales')
+                        ->select('mont')
+                        ->where('status','=',1)
+                        ->whereDate('day','>=',$initialMonth)
+                        ->whereDate('day','<=',$finishMonth)
+                        ->count();
+                
+                $numPlaces = DB::table('sales')
+                        ->select('mont')
+                        ->where('status','=',1)
+                        ->whereDate('day','>=',$initialMonth)
+                        ->whereDate('day','<=',$finishMonth)
+                        ->sum('places');
+                
+                $salesTotalArray[$key] = $salesTotalArray[$key] + $salesMount;
+                
+                $places_and_courses[$key] = array("courses" => $numCourse ,"places" => $numPlaces);
+            }
+
             $view = view('getInfoDashboard', array(
                 'quotationsRejected' => $quotationsRejected,
                 'quotationsOpen' => $quotationsOpen,
@@ -645,12 +735,14 @@ class DashboardController extends Controller {
                 'sales' => $sales,
                 'salesTotal' => $salesTotalArray,
                 'salesTotalRejectArray' => $salesTotalRejectArray,
-                    ))->render();
+            ))->render();
 
             return \Response::json(array(
                         "valid" => "true",
                         "view" => $view,
-                        "salesTotal" => $salesTotalArray
+                        "salesTotal" => $salesTotalArray,
+                        'salesTotalRejectArray' => $salesTotalRejectArray,
+                        "monthValues" => $monthValues
             ));
         }
         
@@ -1260,10 +1352,7 @@ class DashboardController extends Controller {
                     $quotationsByMounth["rejected"][$key] = 0;
                 }
                 
-                $monthValues[] = "y: '".$month."',
-                                        a: ".$quotationsByMounth["closed"][$key].",
-                                        b: ".$quotationsByMounth["open"][$key].",
-                                        c: ".$quotationsByMounth["rejected"][$key]."";
+                $monthValues[] = "y: '".$month."', a: ".$quotationsByMounth["closed"][$key].", b: ".$quotationsByMounth["open"][$key].", c: ".$quotationsByMounth["rejected"][$key]."";
                 
                 if(!isset($opportunitiesByMounth["closed"][$key])){
                     $opportunitiesByMounth["closed"][$key] = 0;
@@ -1277,10 +1366,7 @@ class DashboardController extends Controller {
                     $opportunitiesByMounth["rejected"][$key] = 0;
                 }
                 
-                $monthValuesOport[] = "y: '".$month."',
-                                        a: ".$opportunitiesByMounth["closed"][$key].",
-                                        b: ".$opportunitiesByMounth["open"][$key].",
-                                        c: ".$opportunitiesByMounth["rejected"][$key]."";
+                $monthValuesOport[] = "y: '".$month."', a: ".$opportunitiesByMounth["closed"][$key].", b: ".$opportunitiesByMounth["open"][$key].", c: ".$opportunitiesByMounth["rejected"][$key]."";
                 
                 
                 if(!isset($salesTotalArray[$key])){
@@ -1318,8 +1404,7 @@ class DashboardController extends Controller {
                 
                 $salesTotalArray[$key] = $salesTotalArray[$key] + $salesMount;
                 
-                $places_and_courses[$key] = array("courses" => $numCourse
-                                                 ,"places"        => $numPlaces);
+                $places_and_courses[$key] = array("courses" => $numCourse ,"places" => $numPlaces);
             }
             
           // dd($places_and_courses);
@@ -1416,7 +1501,7 @@ class DashboardController extends Controller {
                               ->whereDate('day','>=',$startDate)
                               ->whereDate('day','<=',$endDate)
                               ->sum('places');
-            
+
             return view('welcome',['quotationsRejected'     => $quotationsRejected,
                                     'quotationsOpen'        => $quotationsOpen,
                                     'quotationsClose'       => $quotationsClose,

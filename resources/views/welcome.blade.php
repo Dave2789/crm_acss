@@ -548,9 +548,7 @@
     <!-- End scripts  -->
     <script type="text/javascript">
         $(function() {
-            
-            
-            
+
             Morris.Bar({
                 element: 'quotationsBar',
                 data: [
@@ -576,7 +574,7 @@
                 resize: true
             });
             
-             Morris.Bar({
+            Morris.Bar({
                 element: 'opportunitiesBar',
                 data: [
                     {<?php echo $monthValuesOport[0]; ?>},
@@ -618,58 +616,97 @@
     
     <script>
 
-var ene = <?php echo $salesTotal['01']; ?>;
-var feb = <?php echo $salesTotal['02']; ?>;
-var mar = <?php echo $salesTotal['03']; ?>;
-var abr = <?php echo $salesTotal['04']; ?>;
-var may = <?php echo $salesTotal['05']; ?>;
-var jun = <?php echo $salesTotal['06']; ?>;
-var jul = <?php echo $salesTotal['07']; ?>;
-var ago = <?php echo $salesTotal['08']; ?>;
-var sep = <?php echo $salesTotal['09']; ?>;
-var oct = <?php echo $salesTotal['10']; ?>;
-var nov = <?php echo $salesTotal['11']; ?>;
-var dic = <?php echo $salesTotal['12']; ?>;
+        var ene = <?php echo $salesTotal['01']; ?>;
+        var feb = <?php echo $salesTotal['02']; ?>;
+        var mar = <?php echo $salesTotal['03']; ?>;
+        var abr = <?php echo $salesTotal['04']; ?>;
+        var may = <?php echo $salesTotal['05']; ?>;
+        var jun = <?php echo $salesTotal['06']; ?>;
+        var jul = <?php echo $salesTotal['07']; ?>;
+        var ago = <?php echo $salesTotal['08']; ?>;
+        var sep = <?php echo $salesTotal['09']; ?>;
+        var oct = <?php echo $salesTotal['10']; ?>;
+        var nov = <?php echo $salesTotal['11']; ?>;
+        var dic = <?php echo $salesTotal['12']; ?>;
 
-var enep = <?php echo $salesTotalRejectArray['01']; ?>;
-var febp = <?php echo $salesTotalRejectArray['02']; ?>;
-var marp = <?php echo $salesTotalRejectArray['03']; ?>;
-var abrp = <?php echo $salesTotalRejectArray['04']; ?>;
-var mayp = <?php echo $salesTotalRejectArray['05']; ?>;
-var junp = <?php echo $salesTotalRejectArray['06']; ?>;
-var julp = <?php echo $salesTotalRejectArray['07']; ?>;
-var agop = <?php echo $salesTotalRejectArray['08']; ?>;
-var sepp = <?php echo $salesTotalRejectArray['09']; ?>;
-var octp = <?php echo $salesTotalRejectArray['10']; ?>;
-var novp = <?php echo $salesTotalRejectArray['11']; ?>;
-var dicp = <?php echo $salesTotalRejectArray['12']; ?>;
- 
-// Bar chart
-var data = {
-  labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
-  series: [
-    [ene, feb, mar, abr, may, jun, jul, ago, sep, oct, nov, dic],
-    [enep, febp, marp, abrp, mayp, junp, julp, agop, sepp, octp, novp, dicp]
-  ]
-};
+        var enep = <?php echo $salesTotalRejectArray['01']; ?>;
+        var febp = <?php echo $salesTotalRejectArray['02']; ?>;
+        var marp = <?php echo $salesTotalRejectArray['03']; ?>;
+        var abrp = <?php echo $salesTotalRejectArray['04']; ?>;
+        var mayp = <?php echo $salesTotalRejectArray['05']; ?>;
+        var junp = <?php echo $salesTotalRejectArray['06']; ?>;
+        var julp = <?php echo $salesTotalRejectArray['07']; ?>;
+        var agop = <?php echo $salesTotalRejectArray['08']; ?>;
+        var sepp = <?php echo $salesTotalRejectArray['09']; ?>;
+        var octp = <?php echo $salesTotalRejectArray['10']; ?>;
+        var novp = <?php echo $salesTotalRejectArray['11']; ?>;
+        var dicp = <?php echo $salesTotalRejectArray['12']; ?>;
 
-var options = {
-  seriesBarDistance: 10
-};
+        // Bar chart
+        var data = {
+            labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+            series: [
+                [
+                    { meta: 'Ventas', value: ene },
+                    { meta: 'Ventas', value: feb },
+                    { meta: 'Ventas', value: mar },
+                    { meta: 'Ventas', value: abr },
+                    { meta: 'Ventas', value: may },
+                    { meta: 'Ventas', value: jun },
+                    { meta: 'Ventas', value: jul },
+                    { meta: 'Ventas', value: ago },
+                    { meta: 'Ventas', value: sep },
+                    { meta: 'Ventas', value: oct },
+                    { meta: 'Ventas', value: nov },
+                    { meta: 'Ventas', value: dic },
+                ],
+                [
+                    { meta: 'Descartados', value: enep },
+                    { meta: 'Descartados', value: febp },
+                    { meta: 'Descartados', value: marp },
+                    { meta: 'Descartados', value: abrp },
+                    { meta: 'Descartados', value: mayp },
+                    { meta: 'Descartados', value: junp },
+                    { meta: 'Descartados', value: julp },
+                    { meta: 'Descartados', value: agop },
+                    { meta: 'Descartados', value: sepp },
+                    { meta: 'Descartados', value: octp },
+                    { meta: 'Descartados', value: novp },
+                    { meta: 'Descartados', value: dicp },
+                ]
+            ]
+        };
 
-var responsiveOptions = [
-  ['screen and (max-width: 640px)', {
-    seriesBarDistance: 5,
+        var customTooltip = function (valor) {
+            var val = parseFloat(valor).toFixed(2);
+            var ventas = new Intl.NumberFormat('es-MX', { maximumFractionDigits: 2 }).format(val);
+            return '$ ' + ventas  + ' MXN';
+        };
 
-    axisX: {
-      labelInterpolationFnc: function (value) {
-        return value[0];
-      }
-    }
-  }]
-];
+        var options = {
+            seriesBarDistance: 10,
+            plugins: [
+                Chartist.plugins.tooltip({
+                    transformTooltipTextFnc: customTooltip
+                })
+            ]
+        };
 
-    var ventas_graf = new Chartist.Bar('.ct-bar-chart', data, options, responsiveOptions);    
+        var responsiveOptions = [
+            ['screen and (max-width: 640px)', {
+                seriesBarDistance: 5,
+
+                axisX: {
+                    labelInterpolationFnc: function (value) {
+                        return value[0];
+                    }
+                }
+            }]
+        ];
+
+        var ventas_graf = new Chartist.Bar('.ct-bar-chart', data, options, responsiveOptions);
+
+
     </script>
     
     <script>

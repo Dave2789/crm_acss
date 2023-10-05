@@ -9921,7 +9921,10 @@ var count = $("#count2").val() - 1;
     });
     
     $(document).on('click', '.searchInfo', function () {
-        
+        //LIMPIAMOS
+        $('#startDay').val('');
+        $('#finishDay').val('');
+
         var id         =  $(this).data('id');
         var day        = -1;   
         var month      = -1;  
@@ -9997,9 +10000,9 @@ var count = $("#count2").val() - 1;
         var pkCampanin = $('#pkCampanin').val();
         var customTooltip = function (valor) {
             var val = parseFloat(valor).toFixed(2);
-            var ventas = val.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
-            return '$ ' + ventas  + ' pesos en ventas';
-          };
+            var ventas = new Intl.NumberFormat('es-MX', { maximumFractionDigits: 2 }).format(val);
+            return '$ ' + ventas  + ' MXN';
+        };
 
         var options = {
             seriesBarDistance: 10,
@@ -10009,11 +10012,10 @@ var count = $("#count2").val() - 1;
                 })
             ]
         };
-          
+
         var responsiveOptions = [
             ['screen and (max-width: 640px)', {
-              seriesBarDistance: 5,
-
+                seriesBarDistance: 5
             }]
         ];
         
@@ -10022,7 +10024,7 @@ var count = $("#count2").val() - 1;
         console.log(pkGiro);
         console.log(pkCampanin);
         
-       
+
         
         $('.searchInfor').each(function() { 
             if($(this).is(':checked')){
@@ -10060,10 +10062,11 @@ var count = $("#count2").val() - 1;
                 },
                 success: function (response) {
                     if(response.valid == "true"){
-                       
+
                         $('#infoChange').empty();
                         $('#infoChange').html(response.view);
-                        console.log(response.salesTotal)
+                        $("#quotationsBar").empty()
+
                         var ene = response.salesTotal['01'] ? response.salesTotal['01'] : 0
                         var feb = response.salesTotal['02'] ? response.salesTotal['02'] : 0
                         var mar = response.salesTotal['03'] ? response.salesTotal['03'] : 0
@@ -10076,15 +10079,92 @@ var count = $("#count2").val() - 1;
                         var oct = response.salesTotal['10'] ? response.salesTotal['10'] : 0
                         var nov = response.salesTotal['11'] ? response.salesTotal['11'] : 0
                         var dic = response.salesTotal['12'] ? response.salesTotal['12'] : 0
+                        var enep = response.salesTotalRejectArray['01'] ? response.salesTotalRejectArray['01'] : 0
+                        var febp = response.salesTotalRejectArray['02'] ? response.salesTotalRejectArray['02'] : 0
+                        var marp = response.salesTotalRejectArray['03'] ? response.salesTotalRejectArray['03'] : 0
+                        var abrp = response.salesTotalRejectArray['04'] ? response.salesTotalRejectArray['04'] : 0
+                        var mayp = response.salesTotalRejectArray['05'] ? response.salesTotalRejectArray['05'] : 0
+                        var junp = response.salesTotalRejectArray['06'] ? response.salesTotalRejectArray['06'] : 0
+                        var julp = response.salesTotalRejectArray['07'] ? response.salesTotalRejectArray['07'] : 0
+                        var agop = response.salesTotalRejectArray['08'] ? response.salesTotalRejectArray['08'] : 0
+                        var sepp = response.salesTotalRejectArray['09'] ? response.salesTotalRejectArray['09'] : 0
+                        var octp = response.salesTotalRejectArray['10'] ? response.salesTotalRejectArray['10'] : 0
+                        var novp = response.salesTotalRejectArray['11'] ? response.salesTotalRejectArray['11'] : 0
+                        var dicp = response.salesTotalRejectArray['12'] ? response.salesTotalRejectArray['12'] : 0
 
                         var newData = {
                             labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
                             series: [
-                              [ene, feb, mar, abr, may, jun, jul, ago, sep, oct, nov, dic],
+                                [
+                                    { meta: 'Ventas', value: ene },
+                                    { meta: 'Ventas', value: feb },
+                                    { meta: 'Ventas', value: mar },
+                                    { meta: 'Ventas', value: abr },
+                                    { meta: 'Ventas', value: may },
+                                    { meta: 'Ventas', value: jun },
+                                    { meta: 'Ventas', value: jul },
+                                    { meta: 'Ventas', value: ago },
+                                    { meta: 'Ventas', value: sep },
+                                    { meta: 'Ventas', value: oct },
+                                    { meta: 'Ventas', value: nov },
+                                    { meta: 'Ventas', value: dic },
+                                ],
+                                [
+                                    { meta: 'Descartados', value: enep },
+                                    { meta: 'Descartados', value: febp },
+                                    { meta: 'Descartados', value: marp },
+                                    { meta: 'Descartados', value: abrp },
+                                    { meta: 'Descartados', value: mayp },
+                                    { meta: 'Descartados', value: junp },
+                                    { meta: 'Descartados', value: julp },
+                                    { meta: 'Descartados', value: agop },
+                                    { meta: 'Descartados', value: sepp },
+                                    { meta: 'Descartados', value: octp },
+                                    { meta: 'Descartados', value: novp },
+                                    { meta: 'Descartados', value: dicp },
+                                ]
                             ]
-                          };
+                        };
 
                         new Chartist.Bar('.ct-bar-chart', newData, options, responsiveOptions);
+
+                        var ene = response.monthValues[0]
+                        var feb = response.monthValues[1]
+                        var mar = response.monthValues[2]
+                        var abr = response.monthValues[3]
+                        var may = response.monthValues[4]
+                        var jun = response.monthValues[5]
+                        var jul = response.monthValues[6]
+                        var ago = response.monthValues[7]
+                        var sep = response.monthValues[8]
+                        var oct = response.monthValues[9]
+                        var nov = response.monthValues[10]
+                        var dic = response.monthValues[11]
+
+                        Morris.Bar({
+                            element: 'quotationsBar',
+                            data: [
+                                { y: ene.y, a: ene.a, b: ene.b, c: ene.c },
+                                { y: feb.y, a: feb.a, b: feb.b, c: feb.c },
+                                { y: mar.y, a: mar.a, b: mar.b, c: mar.c },
+                                { y: abr.y, a: abr.a, b: abr.b, c: abr.c },
+                                { y: may.y, a: may.a, b: may.b, c: may.c },
+                                { y: jun.y, a: jun.a, b: jun.b, c: jun.c },
+                                { y: jul.y, a: jul.a, b: jul.b, c: jul.c },
+                                { y: ago.y, a: ago.a, b: ago.b, c: ago.c },
+                                { y: sep.y, a: sep.a, b: sep.b, c: sep.c },
+                                { y: oct.y, a: oct.a, b: oct.b, c: oct.c },
+                                { y: nov.y, a: nov.a, b: nov.b, c: nov.c },
+                                { y: dic.y, a: dic.a, b: dic.b, c: dic.c },
+                            ],
+                            xkey: 'y',
+                            ykeys: ['a', 'b', 'c'],
+                            labels: ['Cerrada', 'Abierta', 'Descartadas'],
+                            barColors:['#55ce63', '#009efb', '#e46a76'],
+                            hideHover: 'auto',
+                            gridLineColor: '#eef0f2',
+                            resize: true
+                        });
 
                     }else{
                         Swal.fire({
