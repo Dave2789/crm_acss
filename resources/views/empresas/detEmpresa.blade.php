@@ -41,9 +41,9 @@
                            <div class="row align-items-end">
                               <div class="col-md-1 col-sm-2">
                                  @if(!empty($Bussiness->image))
-                                 <img src="/images/business/{!!$Bussiness->image!!}" class="img-fluid">
+                                 <img src="{{ asset('assets/images/business/' . $Bussiness->image)}}" class="img-fluid">
                                  @else 
-                                 <img src="/images/business/em.jpg" class="img-fluid">
+                                 <img src="{{ asset('assets/images/business/em.jpg')}}" class="img-fluid">
                                  @endif
                               </div>
                               <div class="col-md-11 col-sm-10">
@@ -250,11 +250,9 @@
                                        <div>
 
                                              @if(!empty($item->image))
-                                             <img style="max-height: 40px;" src="/images/business/{!! $item->image!!}"
-                                             class="rounded-circle"> 
+                                             <img style="max-height: 40px;" src="{{ asset('assets/images/business/' . $item->image)}}" class="rounded-circle"> 
                                              @else 
-                                             <img style="max-height: 40px;" src="/images/business/em.jpg"
-                                             class="rounded-circle"> 
+                                             <img style="max-height: 40px;" src="{{ asset('assets/images/business/em.jpg')}}" class="rounded-circle"> 
                                              @endif
                                           
                                           
@@ -332,7 +330,7 @@
                                     </td>
                                     <td style="min-width:150px;">
                                        Asignado:
-                                       <div><img style="max-height: 40px;" src="/images/usuarios/user.jpg"
+                                       <div><img style="max-height: 40px;" src="{{ asset('assets/images/usuarios/user.jpg')}}"
                                              class="rounded-circle">{!!$item->agent !!} </div>
                                        <hr style="margin:7px;">
                                        Atendió:<br>
@@ -470,11 +468,9 @@
                                  <td>{!!$item->folio !!}</td>
                                  <td class="text-center">
                                        @if(!empty($item->image))
-                                       <img style="max-height: 40px;" src="/images/business/{!!$item->image!!}"
-                                       class="rounded-circle">
+                                       <img style="max-height: 40px;" src="{{ asset('assets/images/business/' . $item->image)}}" class="rounded-circle">
                                        @else
-                                       <img style="max-height: 40px;" src="/images/business/em.jpg"
-                                       class="rounded-circle"> 
+                                       <img style="max-height: 40px;" src="{{ asset('assets/images/business/em.jpg')}}" class="rounded-circle"> 
                                        @endif
                                    
                                     <div>
@@ -1433,7 +1429,8 @@
                                                                class="ti-calendar"></i></span>
                                                       </div>
                                                       <input type="date" id="date" class="form-control">
-                                                   </div>
+                                                   </div><br/>
+                                                   <span>Nota: El registro de esta actividad se verá reflejada en el calendario </span>
                                                 </div>
                                              </div>
                                              <div class="col-md-3">
@@ -1484,8 +1481,7 @@
                                              </div>
                                           </div>
                                              <div class="col-md-12 text-right">
-                                                <button class="btn btn-success"><span class="ti-check"></span>
-                                                   Crear</button>
+                                                <button class="btn btn-success"><span class="ti-check"></span>Crear</button>
                                              </div>
                                           </div>
                                        </form>
@@ -1520,14 +1516,16 @@
                            @else
                         <li class="timeline-inverted">
                            @endif
-                           <div class="timeline-badge" style="background-color:{!!$item['color']!!}"><i
-                                 class="{!!$item['icon']!!}"></i> </div>
+                           <div class="timeline-badge" style="background-color:{!!$item['color']!!}"><i class="{!!$item['icon']!!}"></i> </div>
                            <div class="timeline-panel">
                               <div class="timeline-heading">
                                  <h4 class="timeline-title">{!! $item["desc"]!!}</h4>
-                                 <p><small class="text-muted"><i class="ti-calendar"></i> {!!$item["register_day"]!!}
-                                       {!! $item["register_hour"]!!} </small><small class="pl-2 text-muted"><i
-                                          class="ti-user"></i> {!!$item["full_name"] !!}</small> </p>
+                                 <p>
+                                    <small class="text-muted"><i class="ti-calendar"></i> {!!$item["register_day"]!!} {!! $item["register_hour"]!!} </small>
+                                    <small class="pl-2 text-muted"><i class="ti-user"></i> {!!$item["full_name"] !!}</small> 
+                                    <small class="pl-2 text-muted"><i class="{{ $item['icon'] }}"></i> {{ $item['type_name'] }} </small> 
+                                    <a href="/calendario/{{ $item['moth'] }}" target="_blank" class="pull-right btn btn-circle btn-success"><i class="ti-calendar"></i></a>
+                                 </p>
                               </div>
                               <div class="timeline-body">
                                 @if(!empty($item["document"]))

@@ -1608,8 +1608,8 @@ class BusinessController extends Controller {
                            ->select('pkCommercial_campaigns'
                                    ,'name')
                            ->where('status','=',1)
-                           ->whereDate('start_date','<=',$date)
-                           ->whereDate('end_date','>=',$date)
+                           //->whereDate('start_date','<=',$date)
+                           //->whereDate('end_date','>=',$date)
                            ->get();
             
             $payment    = DB::table('payment_methods')
@@ -1714,7 +1714,8 @@ class BusinessController extends Controller {
                                              ,'t.pkActivities_type'
                                              ,'t.icon'
                                              ,'a.document as document'
-                                             ,'a.register_hour')
+                                             ,'a.register_hour',
+                                             't.text')
                                     ->where('a.fkBusiness','=',$Bussiness->pkBusiness)
                                     ->orderby('register_date','asc')
                                     ->orderby('register_hour','asc')
@@ -1724,7 +1725,7 @@ class BusinessController extends Controller {
                 
               
               foreach($lineTimeActivitys as $itemActivity){
-           
+                  $timestamp = strtotime($itemActivity->register_date);
                   $arrayLineTime[$cont] = array('desc'         => $itemActivity->description,
                                                'full_name'     => $itemActivity->full_name,
                                                'register_day'  => $itemActivity->register_date,
@@ -1732,7 +1733,10 @@ class BusinessController extends Controller {
                                                'color'         => $itemActivity->color,
                                                'icon'          => $itemActivity->icon,
                                                'document'          => $itemActivity->document,
-                                               'type'          => "actividad");
+                                               'type'          => "actividad",
+                                              'type_name'     =>  $itemActivity->text,
+                                              'moth'          =>  date("n", $timestamp)
+                                            );
                           
                   $cont++;
               }
@@ -1773,7 +1777,7 @@ class BusinessController extends Controller {
                    $cont++;
               }
               
-          
+              
               
             return view('empresas.detEmpresa')->with("Bussiness",$Bussiness)
                                               ->with("contact",$contact)

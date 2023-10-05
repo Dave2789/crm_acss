@@ -285,6 +285,7 @@ Route::get('/emailQuotation', function () {
 
 /*Calendario*/
 Route::get('/calendario',              '\App\Http\Controllers\CalendarController@viewCalendar');
+Route::get('/calendario/{moth}',              '\App\Http\Controllers\CalendarController@viewCalendar');
 Route::get('/AgentCalendary/{id}',     '\App\Http\Controllers\CalendarController@viewCalendarFilter');
 
 Route::post('/getDaysActivity',       '\App\Http\Controllers\CalendarController@getDaysActivity');

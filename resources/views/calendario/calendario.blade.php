@@ -179,19 +179,21 @@
         /*  Initialize the calendar  */
         var date = new Date();
         var d = date.getDate();
-        var m = date.getMonth();
+        var m = {{ $filter }};
         var y = date.getFullYear();
         var form = '';
         var today = new Date($.now());
 
-
+        m = m != 0 ? m : date.getMonth() + 1;
+        console.log('m => ' + m)
         var $this = this;
         $this.$calendarObj = $this.$calendar.fullCalendar({
             slotDuration: '00:15:00', /* If we want to split day time each 15minutes */
             minTime: '08:00:00',
             maxTime: '19:00:00',  
             defaultView: 'month',  
-            handleWindowResize: true,   
+            handleWindowResize: true,
+            defaultDate: y + '-'+ m +'-' + d,
              
             header: {
                 left: 'prev,next today',

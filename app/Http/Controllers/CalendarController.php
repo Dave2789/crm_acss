@@ -18,7 +18,7 @@ class CalendarController extends Controller {
             $this->UserPermits = new UserPermits();
         }
         
-        public function viewCalendar()
+        public function viewCalendar($moth = null)
         {
             $arrayPermition = array();
             $arrayPermition["viewCalendar"]  = $this->UserPermits->getPermition("viewCalendar");
@@ -29,9 +29,11 @@ class CalendarController extends Controller {
                          ->get();
             
             $agent = -1;
+            $filter = $moth ? $moth : 0;
             
             return view('calendario.calendario')->with("agentes",$agentes)
                                                 ->with("agent",$agent)
+                                                ->with("filter",$filter)
                                                 ->with("arrayPermition",$arrayPermition);
         }
         

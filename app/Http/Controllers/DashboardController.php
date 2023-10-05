@@ -4,6 +4,7 @@ use DB;
 use Input;
 use Session;
 use App\Models\User_type;
+use App\Models\Quotation;
 use Illuminate\Http\Request;
 use App\Permissions\UserPermits;
 use App\Helpers\helper;
@@ -696,20 +697,22 @@ class DashboardController extends Controller {
                         ->whereDate('day','>=',$initialMonth)
                         ->whereDate('day','<=',$finishMonth)
                         ->sum('mont');
-                
-                $numCourse = DB::table('sales')
+
+                $numCourse = Quotation::join("quotations_detail", "quotations.pkQuotations","=", "quotations_detail.fkQuotations")->where([['quotations.quotations_status', 5], ['final_date', '>=', $initialMonth], ['final_date', '<=', $finishMonth]])->count();
+                $numPlaces = Quotation::join("quotations_detail", "quotations.pkQuotations","=", "quotations_detail.fkQuotations")->where([['quotations.quotations_status', 5], ['final_date', '>=', $initialMonth], ['final_date', '<=', $finishMonth]])->sum('places');
+                /*$numCourse = DB::table('sales')
                         ->select('mont')
                         ->where('status','=',1)
                         ->whereDate('day','>=',$initialMonth)
                         ->whereDate('day','<=',$finishMonth)
-                        ->count();
+                        ->count();*/
                 
-                $numPlaces = DB::table('sales')
+                /*$numPlaces = DB::table('sales')
                         ->select('mont')
                         ->where('status','=',1)
                         ->whereDate('day','>=',$initialMonth)
                         ->whereDate('day','<=',$finishMonth)
-                        ->sum('places');
+                        ->sum('places');*/
                 
                 $salesTotalArray[$key] = $salesTotalArray[$key] + $salesMount;
                 
@@ -742,7 +745,8 @@ class DashboardController extends Controller {
                         "view" => $view,
                         "salesTotal" => $salesTotalArray,
                         'salesTotalRejectArray' => $salesTotalRejectArray,
-                        "monthValues" => $monthValues
+                        "monthValues" => $monthValues,
+                        'places_and_courses' => $places_and_courses,
             ));
         }
         
@@ -1387,8 +1391,11 @@ class DashboardController extends Controller {
                         ->whereDate('day','>=',$initialMonth)
                         ->whereDate('day','<=',$finishMonth)
                         ->sum('mont');
+
+                $numCourse = Quotation::join("quotations_detail", "quotations.pkQuotations","=", "quotations_detail.fkQuotations")->where([['quotations.quotations_status', 5], ['final_date', '>=', $initialMonth], ['final_date', '<=', $finishMonth]])->count();
+                $numPlaces = Quotation::join("quotations_detail", "quotations.pkQuotations","=", "quotations_detail.fkQuotations")->where([['quotations.quotations_status', 5], ['final_date', '>=', $initialMonth], ['final_date', '<=', $finishMonth]])->sum('number_places');
                 
-                $numCourse = DB::table('sales')
+                /*$numCourse = DB::table('sales')
                         ->select('mont')
                         ->where('status','=',1)
                         ->whereDate('day','>=',$initialMonth)
@@ -1400,7 +1407,7 @@ class DashboardController extends Controller {
                         ->where('status','=',1)
                         ->whereDate('day','>=',$initialMonth)
                         ->whereDate('day','<=',$finishMonth)
-                        ->sum('places');
+                        ->sum('places');*/
                 
                 $salesTotalArray[$key] = $salesTotalArray[$key] + $salesMount;
                 
@@ -1482,8 +1489,19 @@ class DashboardController extends Controller {
                 $numCurse = DB::table('courses')
                               ->where('status','=',1)
                               ->count();
+
+                $courseMore = Quotation::join("quotations_detail", "quotations.pkQuotations","=", "quotations_detail.fkQuotations")
+                            ->join("quotation_by_courses", "quotations_detail.pkQuotations_detail", "=", "quotation_by_courses.fkQuotationDetail")
+                            ->select(
+                                'quotation_by_courses.fkCourses',
+                                DB::raw('(SELECT name FROM courses WHERE pkCourses = quotation_by_courses.fkCourses) as name'),
+                                DB::raw('(SELECT SUM(number_places) FROM quotations_detail WHERE quotations_detail.fkQuotations = quotations.pkQuotations) as places'),
+                            )->where([['quotations.quotations_status', 5], ['quotation_by_courses.fkCourses', '!=', -1], ['final_date', '>=', '2023-01-01'], ['final_date', '<=', $endDate] ])->groupBy('fkCourses')->get();
+
+                $totalCourse = Quotation::join("quotations_detail", "quotations.pkQuotations","=", "quotations_detail.fkQuotations")
+                            ->where([['quotations.quotations_status', 5], ['final_date', '>=', '2023-01-01'], ['final_date', '<=', $endDate] ])->sum('number_places');
                 
-                $courseMore = DB::table('sales')
+                /*$courseMore = DB::table('sales')
                               ->select('nameCourse as name'
                                       ,DB::raw('SUM(places) AS places'))
                               ->where('status','=',1)
@@ -1492,15 +1510,15 @@ class DashboardController extends Controller {
                               ->distinct('nameCourse')
                               ->whereDate('day','>=',$startDate)
                               ->whereDate('day','<=',$endDate)
-                              ->get();
+                              ->get();*/
                 
                 
-            $totalCourse    = DB::table('sales')
+            /*$totalCourse    = DB::table('sales')
                               ->select('nameCourse as name')
                               ->where('status','=',1)
                               ->whereDate('day','>=',$startDate)
                               ->whereDate('day','<=',$endDate)
-                              ->sum('places');
+                              ->sum('places');*/
 
             return view('welcome',['quotationsRejected'     => $quotationsRejected,
                                     'quotationsOpen'        => $quotationsOpen,
