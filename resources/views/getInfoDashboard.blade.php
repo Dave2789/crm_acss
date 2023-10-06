@@ -159,9 +159,9 @@
                             <div class="ml-auto">
                                 <h2 class="counter badge badge-pill text-white" style="background-color:{!!$levelInterestInfo->color !!}">
                                     @if(isset($arrayLevelInterest[$levelInterestInfo->pkLevel_interest]))
-                                    {!!$arrayLevelInterest[$levelInterestInfo->pkLevel_interest]!!}
+                                        {{ $arrayLevelInterest[$levelInterestInfo->pkLevel_interest]->nivel }}
                                     @else
-                                    0
+                                        0
                                     @endif
                                 </h2>
                             </div>

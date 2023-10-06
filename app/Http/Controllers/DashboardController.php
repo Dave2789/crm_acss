@@ -254,7 +254,7 @@ class DashboardController extends Controller {
                     }
                 }
                 
-                if($quotationsInfo->quotations_status == 1 || $quotationsInfo->quotations_status == 4){
+                if($quotationsInfo->quotations_status == 4 || $quotationsInfo->quotations_status == 5){
                     if (isset($arrayLevelInterest[$quotationsInfo->fkLevel_interest])) {
                         $arrayLevelInterest[$quotationsInfo->fkLevel_interest] ++;
                     } else {
@@ -398,11 +398,12 @@ class DashboardController extends Controller {
                             
                             
                             
-                            
+                        if($quotationsInfo->quotations_status == 5){
                             if (isset($quotationsSales["total"])) {
-                            $quotationsSales["total"] ++;
-                        } else {
-                            $quotationsSales["total"] = 1;
+                                $quotationsSales["total"] ++;
+                            } else {
+                                $quotationsSales["total"] = 1;
+                            }
                         }
 
                         $quotationsDetailQuerySale = DB::table('quotations_detail')
@@ -617,16 +618,16 @@ class DashboardController extends Controller {
 
             if(isset($quotationsSales["total"])){
                 $sales["total"] = $quotationsSales["total"] + $salesTotal;
-                        }else{
-                    $sales["total"] =  $salesTotal;      
-                        }
+            }else{
+                $sales["total"] =  $salesTotal;      
+            }
         
             $sales["percent"] = 100;
         
             if(isset($quotationsSales["total"])){
-            $sales["mount"] = $quotationsSales["mount"] + $salesMount;
+                $sales["mount"] = $quotationsSales["mount"] + $salesMount;
             }else{
-            $sales["mount"] = $salesMount;    
+                $sales["mount"] = $salesMount;    
             }
 
             $arrayMonths = array(   '01' => 'Enero',
@@ -699,7 +700,7 @@ class DashboardController extends Controller {
                         ->sum('mont');
 
                 $numCourse = Quotation::join("quotations_detail", "quotations.pkQuotations","=", "quotations_detail.fkQuotations")->where([['quotations.quotations_status', 5], ['final_date', '>=', $initialMonth], ['final_date', '<=', $finishMonth]])->count();
-                $numPlaces = Quotation::join("quotations_detail", "quotations.pkQuotations","=", "quotations_detail.fkQuotations")->where([['quotations.quotations_status', 5], ['final_date', '>=', $initialMonth], ['final_date', '<=', $finishMonth]])->sum('places');
+                $numPlaces = Quotation::join("quotations_detail", "quotations.pkQuotations","=", "quotations_detail.fkQuotations")->where([['quotations.quotations_status', 5], ['final_date', '>=', $initialMonth], ['final_date', '<=', $finishMonth]])->sum('number_places');
                 /*$numCourse = DB::table('sales')
                         ->select('mont')
                         ->where('status','=',1)
@@ -718,6 +719,21 @@ class DashboardController extends Controller {
                 
                 $places_and_courses[$key] = array("courses" => $numCourse ,"places" => $numPlaces);
             }
+            $arrayLevelInterest = [];
+            $arrayLevelInterest[1] = DB::selectOne("select COUNT(*) as nivel "
+            . "from quotations "
+            . "INNER JOIN business ON business.pkBusiness = quotations.fkBusiness "
+            . "where quotations.status = 1 and business.status = 1 and fkLevel_interest = 1 " . $whereFilters . "  and ((final_date >= '" . $startDate . "' and final_date <= '" . $endDate . "') or (register_day >= '" . $startDate . "' and register_day <= '" . $endDate . "'))");
+
+            $arrayLevelInterest[2] = DB::selectOne("select COUNT(*) as nivel "
+            . "from quotations "
+            . "INNER JOIN business ON business.pkBusiness = quotations.fkBusiness "
+            . "where quotations.status = 1 and business.status = 1 and fkLevel_interest = 2 " . $whereFilters . "  and ((final_date >= '" . $startDate . "' and final_date <= '" . $endDate . "') or (register_day >= '" . $startDate . "' and register_day <= '" . $endDate . "'))");
+
+            $arrayLevelInterest[3] = DB::selectOne("select COUNT(*) as nivel "
+            . "from quotations "
+            . "INNER JOIN business ON business.pkBusiness = quotations.fkBusiness "
+            . "where quotations.status = 1 and business.status = 1 and fkLevel_interest = 3 " . $whereFilters . "  and ((final_date >= '" . $startDate . "' and final_date <= '" . $endDate . "') or (register_day >= '" . $startDate . "' and register_day <= '" . $endDate . "'))");
 
             $view = view('getInfoDashboard', array(
                 'quotationsRejected' => $quotationsRejected,

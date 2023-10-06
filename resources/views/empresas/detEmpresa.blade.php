@@ -1429,8 +1429,7 @@
                                                                class="ti-calendar"></i></span>
                                                       </div>
                                                       <input type="date" id="date" class="form-control">
-                                                   </div><br/>
-                                                   <span>Nota: El registro de esta actividad se verá reflejada en el calendario </span>
+                                                   </div>
                                                 </div>
                                              </div>
                                              <div class="col-md-3">
@@ -1464,22 +1463,39 @@
                                                 
                                              </div>
                                              <div class="col-md-4">
-                                             <div class="form-group">
-                                                <label class="control-label">Campaña</label>
-                                                <select id="campaningAc" class="form-control custom-select"
-                                                   data-placeholder="Elige el estatus" tabindex="1">
-                                                   @if(sizeof($companis) > 0)
-                                                   <option value="-1">Selecciona una campaña</option>
-                                                   @foreach($companis as $item)
-                                                   <option value="{!! $item->pkCommercial_campaigns !!}">{!!
-                                                      $item->name!!}</option>
-                                                   @endforeach
-                                                   @else
-                                                   <option value="-1">No existen campañas actualmente</option>
-                                                   @endif
-                                                </select>
+                                                <div class="form-group">
+                                                   <label class="control-label">Campaña</label>
+                                                   <select id="campaningAc" class="form-control custom-select"
+                                                      data-placeholder="Elige el estatus" tabindex="1">
+                                                      @if(sizeof($companis) > 0)
+                                                      <option value="-1">Selecciona una campaña</option>
+                                                      @foreach($companis as $item)
+                                                      <option value="{!! $item->pkCommercial_campaigns !!}">{!!
+                                                         $item->name!!}</option>
+                                                      @endforeach
+                                                      @else
+                                                      <option value="-1">No existen campañas actualmente</option>
+                                                      @endif
+                                                   </select>
+                                                </div>
                                              </div>
-                                          </div>
+                                             <div class="col-md-12">
+                                                <div class="form-group">
+                                                   <label class="control-label">Agregar al calendario <br/> <small>Nota: Al seleccionar "Si" la actividad se guardará en el calendario y podrá consultarla desde la línea de tiempo - calendario - actividades. </small> </label>
+                                                   <div class="form-row">
+                                                      <div class="d-flex">
+                                                         <div class="custom-control custom-radio mr-4">
+                                                            <input type="radio" class="custom-control-input" name="reg_calendario" value="1" id="calendario_si">
+                                                            <label class="custom-control-label" for="calendario_si">Sí</label>
+                                                         </div>
+                                                         <div class="custom-control custom-radio mr-4">
+                                                            <input type="radio" class="custom-control-input" name="reg_calendario" value="0" id="calendario_no" checked="true">
+                                                            <label class="custom-control-label" for="calendario_no">No</label>
+                                                         </div>
+                                                      </div>
+                                                   </div>
+                                                </div>
+                                             </div>
                                              <div class="col-md-12 text-right">
                                                 <button class="btn btn-success"><span class="ti-check"></span>Crear</button>
                                              </div>
