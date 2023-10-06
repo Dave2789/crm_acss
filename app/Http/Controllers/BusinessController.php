@@ -1714,7 +1714,8 @@ class BusinessController extends Controller {
                                              ,'t.pkActivities_type'
                                              ,'t.icon'
                                              ,'a.document as document'
-                                             ,'a.register_hour',
+                                             ,'a.register_hour'
+                                             ,'a.execution_date',
                                              't.text')
                                     ->where('a.fkBusiness','=',$Bussiness->pkBusiness)
                                     ->orderby('register_date','asc')
@@ -1727,15 +1728,16 @@ class BusinessController extends Controller {
               foreach($lineTimeActivitys as $itemActivity){
                   $timestamp = strtotime($itemActivity->register_date);
                   $arrayLineTime[$cont] = array('desc'         => $itemActivity->description,
-                                               'full_name'     => $itemActivity->full_name,
-                                               'register_day'  => $itemActivity->register_date,
-                                               'register_hour' => $itemActivity->register_hour,
-                                               'color'         => $itemActivity->color,
-                                               'icon'          => $itemActivity->icon,
-                                               'document'          => $itemActivity->document,
-                                               'type'          => "actividad",
-                                              'type_name'     =>  $itemActivity->text,
-                                              'moth'          =>  date("n", $timestamp)
+                                                'full_name'     => $itemActivity->full_name,
+                                                'register_day'  => $itemActivity->register_date,
+                                                'register_hour' => $itemActivity->register_hour,
+                                                'color'         => $itemActivity->color,
+                                                'icon'          => $itemActivity->icon,
+                                                'document'          => $itemActivity->document,
+                                                'type'          => "actividad",
+                                                'type_name'     =>  $itemActivity->text,
+                                                'moth'          =>  date("n", $timestamp),
+                                                'execution_date'     =>  $itemActivity->execution_date,
                                             );
                           
                   $cont++;

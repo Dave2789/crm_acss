@@ -2879,6 +2879,7 @@ $.LoadingOverlay("hide");
         var date                    = $('#date').val();
         var hour                    = $('#hour').val();
         var campaning               = $('#campaningAc').val();
+        var reg_calendario          = $('input:radio[name=reg_calendario]:checked').val();
         var document                = $('#document').val();
         event.preventDefault();
     
@@ -2934,6 +2935,17 @@ $.LoadingOverlay("hide");
             }
             );
         }
+
+        if (reg_calendario == "1") {
+            if(date == ""){
+                flag = "false";
+                $("#date").css({
+                    "-moz-box-shadow": "0 0 5px #f40404",
+                    "-webkit-box-shadow": "0 0 5px #f40404",
+                    "box-shadow": "0 0 5px #f40404"
+                });
+            }
+        }
         
   
         if (flag == "true") {
@@ -2946,6 +2958,7 @@ $.LoadingOverlay("hide");
             sendData.append('date', date);
             sendData.append('hour', hour);
             sendData.append('campaning', campaning);
+            sendData.append('reg_calendario', reg_calendario);
             sendData.append('document', $('#document')[0].files[0]);
             
             

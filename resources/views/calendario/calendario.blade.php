@@ -115,7 +115,7 @@
                    
               defaultEvents = response.event;
 
-         console.log(defaultEvents);
+            console.log(defaultEvents);
 !function($) {
     "use strict";
 
@@ -194,7 +194,7 @@
             defaultView: 'month',  
             handleWindowResize: true,
             defaultDate: y + '-'+ m +'-' + d,
-             
+
             header: {
                 left: 'prev,next today',
                 center: 'title',

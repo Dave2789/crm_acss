@@ -77,18 +77,18 @@ class CalendarController extends Controller {
                                    ,'a.final_hour')
                            ->where('a.status','=',1)
                            ->where('t.pkActivities_type','>',0)
-                           ->where('u.pkUser','=',$agent)
+                           //->where('u.pkUser','=',$agent)
                            ->get();
             $cont = 0;
             
             foreach($activitys as $infoActivity){
-              if(empty($infoActivity->execution_date )){
-               $event[$cont] =  array("id"     => $infoActivity->pkActivities
+              if(!empty($infoActivity->execution_date )){
+                $event[$cont] =  array("id"     => $infoActivity->pkActivities
                                       ,"title" => $infoActivity->activityType
-                                      ,"start" => $infoActivity->final_date
+                                      ,"start" => $infoActivity->execution_date
                                       ,"backgroundColor" => $infoActivity->color
-                                                           );
-                     $cont++;  
+                                    );
+                $cont++;  
               }
             }
           

@@ -1539,8 +1539,10 @@
                                  <p>
                                     <small class="text-muted"><i class="ti-calendar"></i> {!!$item["register_day"]!!} {!! $item["register_hour"]!!} </small>
                                     <small class="pl-2 text-muted"><i class="ti-user"></i> {!!$item["full_name"] !!}</small> 
-                                    <small class="pl-2 text-muted"><i class="{{ $item['icon'] }}"></i> {{ $item['type_name'] }} </small> 
-                                    <a href="/calendario/{{ $item['moth'] }}" target="_blank" class="pull-right btn btn-circle btn-success"><i class="ti-calendar"></i></a>
+                                    <small class="pl-2 text-muted"><i class="{{ $item['icon'] }}"></i> {{ $item['type_name'] }} </small>
+                                    @if($item['execution_date'])
+                                       <a href="/calendario/{{ $item['moth'] }}" target="_blank" class="pull-right btn btn-circle btn-success"><i class="ti-calendar"></i></a>
+                                    @endif
                                  </p>
                               </div>
                               <div class="timeline-body">

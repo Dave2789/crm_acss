@@ -87,17 +87,18 @@ class ActivityController extends Controller {
             $hour                   = $request->input("hour");
             $document               = $request->file('document');
             $campaning              = $request->input('campaning');
+            $reg_calendario         = $request->input("reg_calendario");
             $dateRegister           = date("Y-m-d");
             $hourRegister           = date("H:i:s");
             $path                   = "";
             $flag = "true";
-            
+
             $type_event_businessAux = explode("_", $type_event_business);
             $typeBusiness           = $type_event_businessAux[1];
             
                             $ExistActivity = DB::table('activities')
-                                   ->where('fkBusiness','=',$activityBusiness)
-                                   ->first();
+                                                ->where('fkBusiness','=',$activityBusiness)
+                                                ->first();
                 
                 if(empty($ExistActivity->pkActivities)){
                     $statusBussines = new Status_by_bussines;
@@ -123,7 +124,7 @@ class ActivityController extends Controller {
                 }
             }
             
-            if($type_activity == 2){
+            if($reg_calendario == 0){
                 $insertActivity->fkUser             = $userAgent;
                 $insertActivity->fkActivities_type  = $type_activity;
                 $insertActivity->description        = $description;
@@ -132,8 +133,6 @@ class ActivityController extends Controller {
                 $insertActivity->fkCampaign         = $campaning;
                 $insertActivity->final_date         = $dateRegister;
                 $insertActivity->final_hour         = $hourRegister;
-                $insertActivity->execution_date     = $dateRegister;
-                $insertActivity->execution_hour     = $hourRegister;
                 $insertActivity->document           = $path;
                 $insertActivity->status             = 1;
             }else{
@@ -146,6 +145,8 @@ class ActivityController extends Controller {
                 $insertActivity->final_date         = $date;
                 $insertActivity->final_hour         = $hour;
                 $insertActivity->document           = $path;
+                $insertActivity->execution_date     = $date;
+                $insertActivity->execution_hour     = $hour;
                 $insertActivity->status             = 1;
             }
            
